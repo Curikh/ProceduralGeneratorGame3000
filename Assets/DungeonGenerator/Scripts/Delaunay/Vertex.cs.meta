@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 5a46a4b2036296640aa9e2047aa1ca38
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 298437
+  packageName: 2D Procedural Dungeon Generator
+  packageVersion: 1.0.0
+  assetPath: Assets/DungeonGenerator/Scripts/Delaunay/Vertex.cs
+  uploadId: 700498

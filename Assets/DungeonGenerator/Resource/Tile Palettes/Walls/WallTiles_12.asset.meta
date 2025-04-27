@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 47bacd4da9cabc541bbdbb1a5d161270
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 298437
+  packageName: 2D Procedural Dungeon Generator
+  packageVersion: 1.0.0
+  assetPath: Assets/DungeonGenerator/Resource/Tile Palettes/Walls/WallTiles_12.asset
+  uploadId: 700498
