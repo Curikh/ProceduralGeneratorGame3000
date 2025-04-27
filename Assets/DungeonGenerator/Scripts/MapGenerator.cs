@@ -52,8 +52,9 @@ namespace DungeonGenerator
         [SerializeField] private float lineWidth;               // Width of all lines
         [SerializeField] private float lineDrawTerm;            // Time between creating and deleting a LineRenderer.
 
-        [Header("Player Spawn")]
+        [Header("Objects Spawn")]
         [SerializeField] private GameObject playerPrefab;
+		[SerializeField] private GameObject endPrefab;
         
         private List<GameObject> rooms = new List<GameObject>();
         private HashSet<Delaunay.Vertex> vertices = new HashSet<Delaunay.Vertex>();
@@ -69,6 +70,7 @@ namespace DungeonGenerator
         public int MinX { get => minX; }
         public int MinY { get => minY; }
         public Vector2 StartPosition { get; private set; }
+		public Vector2 EndPosition { get; private set; }
 
 
         private void Start()
@@ -94,6 +96,7 @@ namespace DungeonGenerator
             MapArrNormalization();                              // Normalize Map for auto tiling
             OnMapGenComplete();    
             SpawnPlayer();
+			SpawnEnd();
                              // Transfer Map Data for auto tiling
             if (isVisualizeProgress) yield return new WaitForSeconds(1f);
 
@@ -115,6 +118,20 @@ namespace DungeonGenerator
                 Debug.LogError("Player prefab is not assigned in MapGenerator!");
             }
         }
+		private void SpawnEnd()
+        {
+            if (endPrefab != null)
+            {
+                Instantiate(endPrefab, EndPosition, Quaternion.identity);
+                Debug.Log($"End spawned at: {EndPosition}");
+            }
+            else
+            {
+                Debug.LogError("End prefab is not assigned in MapGenerator!");
+            }
+        }
+		
+		
         /** Randomly Spawn Rooms **/
         private IEnumerator SpawnRooms()
         {
@@ -213,12 +230,23 @@ namespace DungeonGenerator
                 count++;
             }
 
-            tmpRooms.Sort((a, b) => b.size.CompareTo(a.size));
-            if (tmpRooms.Count > 0)
+            //selectedRooms.Sort((a, b) => b.size.CompareTo(a.size));
+            if (selectedRooms.Count > 1)
             {
-            int startRoomIndex = tmpRooms[0].index;
-            StartPosition = rooms[startRoomIndex].transform.position;
+				Debug.Log("Selected {selectedRooms.Count} rooms");
+				//(int index, ) startRoom = selectedRooms[Random.Range(0,selectedRooms.Count)];
+				int startRoomIndex = selectedRooms[Random.Range(0,selectedRooms.Count)].index;	
+				int endRoomIndex;
+				do {
+					// endRoom = selectedRooms[Random.Range(0,selectedRooms.Count)];			
+					endRoomIndex = selectedRooms[Random.Range(0,selectedRooms.Count)].index;
+	
+				} while (endRoomIndex == startRoomIndex);
+			
+				StartPosition = rooms[startRoomIndex].transform.position;
+				EndPosition = rooms[endRoomIndex].transform.position;
             }
+			else Debug.Log("Too few rooms!");
 
         }
 
