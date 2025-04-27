@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static EndScript;
 
 namespace DungeonGenerator
 {
@@ -72,12 +73,56 @@ namespace DungeonGenerator
         public Vector2 StartPosition { get; private set; }
 		public Vector2 EndPosition { get; private set; }
 
+		private GameObject PlayerObject;
+		private GameObject EndObject;
+		
+		private int LevelCount = 1;
 
+		
+		private void ResetVars() {
+			rooms = new List<GameObject>();
+			vertices = new HashSet<Delaunay.Vertex>();
+			lineRenderers = new List<GameObject>();
+			selectedRooms = new List<(int, Vector2)>();
+			gridsList = new List<GameObject>();
+			minX = int.MaxValue;
+			minY = int.MaxValue;
+			maxX = int.MinValue;
+			maxY = int.MinValue;
+		}
+
+		public void Reset(){
+			LevelCount ++;
+			ClearAll();
+            GetComponent<AutoTiling>().ClearTiles();
+			ResetVars();
+			Debug.Log(LevelCount);
+			StartCoroutine(MapGenerateCoroutine());
+			
+			
+			
+		}
+		
+		public void ClearAll(){ 
+		Debug.Log("reached");
+		/*foreach (var room in rooms){
+			Debug.Log("1");
+			Destroy(room);
+		}*/
+		ClearObjects();
+		Destroy(PlayerObject);
+		Destroy(EndObject);
+		}
+		public List<GameObject> GetRooms(){ 
+		return rooms;
+		}
+		
         private void Start()
         {
+						Debug.Log(LevelCount);
             StartCoroutine(MapGenerateCoroutine());
         }
-
+		
         private IEnumerator MapGenerateCoroutine()
         {
             yield return new WaitForSeconds(1f);
@@ -97,6 +142,8 @@ namespace DungeonGenerator
             OnMapGenComplete();    
             SpawnPlayer();
 			SpawnEnd();
+			EndObject.GetComponent<EndScript>().event_1.AddListener(Reset);
+			
                              // Transfer Map Data for auto tiling
             if (isVisualizeProgress) yield return new WaitForSeconds(1f);
 
@@ -110,7 +157,7 @@ namespace DungeonGenerator
         {
             if (playerPrefab != null)
             {
-                Instantiate(playerPrefab, StartPosition, Quaternion.identity);
+                PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
                 Debug.Log($"Player spawned at: {StartPosition}");
             }
             else
@@ -122,7 +169,7 @@ namespace DungeonGenerator
         {
             if (endPrefab != null)
             {
-                Instantiate(endPrefab, EndPosition, Quaternion.identity);
+                EndObject = Instantiate(endPrefab, EndPosition, Quaternion.identity);
                 Debug.Log($"End spawned at: {EndPosition}");
             }
             else

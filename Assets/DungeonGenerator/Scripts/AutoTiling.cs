@@ -101,6 +101,13 @@ namespace DungeonGenerator
 
         int[] dirX = { 1, 0, -1, 1, 0, -1, 1, 0, -1 };
         int[] dirY = { -1, -1, -1, 0, 0, 0, 1, 1, 1 };
+		public void ClearTiles(){
+			floorTilemap.ClearAllTiles();
+			wallTilemap.ClearAllTiles();
+			wallTopTilemap.ClearAllTiles();
+			cliffTilemap.ClearAllTiles();
+			shadowTilemap.ClearAllTiles();
+		}
 
         public void TilingMap()
         {
