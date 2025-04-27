@@ -157,6 +157,34 @@ namespace DungeonGenerator
                 }
             }
         }
+        public void AddCollidersAfterGeneration()
+    {
+        AddColliderToTilemap(wallTilemap);
+        AddColliderToTilemap(wallTopTilemap);
+    }
+
+    // Вспомогательный метод для настройки коллайдеров
+       private void AddColliderToTilemap(Tilemap tilemap)
+    {
+        if (tilemap == null) return;
+        
+        var collider = tilemap.gameObject.GetComponent<TilemapCollider2D>();
+        if (collider == null)
+        {
+            collider = tilemap.gameObject.AddComponent<TilemapCollider2D>();
+        }
+        
+        var composite = tilemap.gameObject.GetComponent<CompositeCollider2D>();
+        if (composite == null)
+        {
+            var rb = tilemap.gameObject.AddComponent<Rigidbody2D>();
+            rb.bodyType = RigidbodyType2D.Static;
+            composite = tilemap.gameObject.AddComponent<CompositeCollider2D>();
+            composite.geometryType = CompositeCollider2D.GeometryType.Polygons;
+        }
+        
+        collider.usedByComposite = true;
+    }
 
         /** Tile Placing Functions**/
         private void PlaceWallTile(int x, int y, int tileType)
@@ -308,7 +336,7 @@ namespace DungeonGenerator
                 int checkX = x + dirX[i];
                 int checkY = y + dirY[i];
 
-                // �� ���� ������ �˻�
+                // �� ���� ������ �˻�
                 if (checkX >= 0 && checkX < map.GetLength(1) && checkY >= 0 && checkY < map.GetLength(0))
                 {
                     if (map[checkY, checkX] != (int)GridType.None)

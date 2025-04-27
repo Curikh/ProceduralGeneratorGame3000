@@ -148,9 +148,11 @@ namespace DungeonGenerator
             if (isVisualizeProgress) yield return new WaitForSeconds(1f);
 
             GetComponent<AutoTiling>().TilingMap();
+            GetComponent<AutoTiling>().AddCollidersAfterGeneration();
             ClearObjects();
 
             Time.timeScale = 1.0f;
+            
         }
 
          private void SpawnPlayer()
