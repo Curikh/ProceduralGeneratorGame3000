@@ -52,6 +52,7 @@ namespace DungeonGenerator
         [SerializeField] private int overlapWidth;              // Width to determine corridor ('L' shape or straight )
         [SerializeField] private int hallwayWidth;              // Width of hallway ( Recommend : lesser than 'maxRoomSize' )
         [SerializeField, Range(1, 9)] private int smoothLevel;  // 9 : Disable smooth
+		[SerializeField] private bool isExplodeOnRuntime;
 
 
         [Header("Visualize Generating Progress")]
@@ -153,6 +154,9 @@ namespace DungeonGenerator
         private void Start()
         {
 			Debug.Log(LevelCount);
+			if (!isVisualizeProgress){
+				roomSpawnTerm = 0;
+			}
 
 			ResetVars();
 			StartCoroutine(MapGenerateCoroutine());
@@ -171,7 +175,7 @@ namespace DungeonGenerator
             MainRoomFraming();                                  // Frame Main rooms with walls
             yield return StartCoroutine(ConnectRooms());        // Connect Rooms ( Delaunay Triangulation and MST )
             yield return StartCoroutine(GenerateHallways());
-            //CellularAutomata(smoothLevel);                      // Smooth ( I think it isn't necessary )
+            CellularAutomata(smoothLevel);                      // Smooth ( I think it isn't necessary )
 
 		
             MapArrNormalization();                              // Normalize Map for auto tiling
@@ -215,13 +219,40 @@ namespace DungeonGenerator
                 Debug.LogError("End prefab is not assigned in MapGenerator!");
             }
         }
+		private void TurnOnRoomGravity(GameObject room)
+		{
+			room.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+			room.GetComponent<Rigidbody2D>().gravityScale = 0f;
+		}
+		private GameObject InstatiateNewRoom(GameObject room_prefab, System.Func<Vector2Int, Vector3> SpawnFunction, Vector2Int size)
+		{
+			GameObject newRoom = Instantiate(gridPrefab, SpawnFunction(spawnRegionSize), Quaternion.identity);
+			newRoom.transform.localScale = GetRandomScale(size[0], size[1]);
+			return newRoom;
+
+		}
+		private GameObject InstatiateNewRoom(GameObject room_prefab, System.Func<Vector2Int, Vector3> SpawnFunction, Vector2Int size, bool explodeOnRuntime)
+		{
+			GameObject newRoom = Instantiate(gridPrefab, SpawnFunction(spawnRegionSize), Quaternion.identity);
+			if (explodeOnRuntime) TurnOnRoomGravity(newRoom);
+			newRoom.transform.localScale = GetRandomScale(size[0], size[1]);
+			return newRoom;
+
+		}
+
+		private void PopulateList(List<GameObject> listToAdd, Vector2Int size, int nToAdd,
+				GameObject room_prefab, System.Func<Vector2Int, Vector3> SpawnFunction)
+		{
+
+		}
+
 		
 
         /// <summary>Randomly Spawn Rooms</summary>
         private IEnumerator SpawnRooms()
 		{
 
-			System.Func<Vector2Int, int, Vector3> SpawnFunction = GetRandomPointInRect;
+			System.Func<Vector2Int, Vector3> SpawnFunction = GetRandomPointInRect;
 
 			switch (randomSpawnType)
 			{
@@ -241,41 +272,49 @@ namespace DungeonGenerator
 					SpawnFunction = GetRandomPointInLineV;
 					break;
 			}
+
+
 			// Randomly spawn rooms
-			for (int i = 0; i < generateRoomCnt; i++)
+			for (int i = 0; i < selectRoomCnt; i++)
 			{
 				Random.InitState(SEED + i);
-				rooms.Add(Instantiate(gridPrefab, SpawnFunction(spawnRegionSize, i), Quaternion.identity));
 
-				if (i > selectRoomCnt) rooms[i].transform.localScale = GetRandomScale(smallMinRoomSize, smallMaxRoomSize);
-				else rooms[i].transform.localScale = GetRandomScale(minRoomSize, maxRoomSize);
-
+				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(minRoomSize, maxRoomSize), isExplodeOnRuntime);
+				rooms.Add(newRoom);
 				yield return new WaitForSeconds(roomSpawnTerm);
 			}
+			for (int i = 0; i < generateRoomCnt - selectRoomCnt; i++)
+			{
+				Random.InitState(SEED + i);
+
+				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(smallMinRoomSize, smallMaxRoomSize), isExplodeOnRuntime);
+				rooms.Add(newRoom);
+				yield return new WaitForSeconds(roomSpawnTerm);
+			}
+			
+			if (!isExplodeOnRuntime) foreach (GameObject room in rooms) TurnOnRoomGravity(room);
+				
+		
+
 
 			// Dynamic for Physics Interaction
-			for (int i = 0; i < generateRoomCnt; i++)
-			{
-				rooms[i].GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
-				rooms[i].GetComponent<Rigidbody2D>().gravityScale = 0f;
-			}
 		}
 		
 
-        private Vector3 GetRandomPointInOval(Vector2Int size, int salt)
+        private Vector3 GetRandomPointInOval(Vector2Int size)
         {
             float theta = Random.Range(0, 2 * Mathf.PI);
             float rad = Mathf.Sqrt(Random.Range(0, 1f));
 
             return new Vector3(size.x * rad * Mathf.Cos(theta), size.y * rad * Mathf.Sin(theta));
         }
-        private Vector3 GetRandomPointInRect(Vector2Int size, int salt)
+        private Vector3 GetRandomPointInRect(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
             return new Vector3(width, height, 0);
         }
-        private Vector3 GetRandomPointInCross(Vector2Int size, int salt)
+        private Vector3 GetRandomPointInCross(Vector2Int size)
         {
 			bool isVertical = Random.value < 0.5f;
             float width = Random.Range(-size.x, size.x);
@@ -283,13 +322,13 @@ namespace DungeonGenerator
 			if (isVertical) return new Vector3(0, height, 0);
 			return new Vector3(width, 0, 0);
         }
-        private Vector3 GetRandomPointInLineV(Vector2Int size, int salt)
+        private Vector3 GetRandomPointInLineV(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
 			return new Vector3(0, height, 0);
         }
-        private Vector3 GetRandomPointInLineH(Vector2Int size, int salt)
+        private Vector3 GetRandomPointInLineH(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
