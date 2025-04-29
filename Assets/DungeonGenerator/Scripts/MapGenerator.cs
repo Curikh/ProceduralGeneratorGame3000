@@ -21,7 +21,18 @@ namespace DungeonGenerator
     {
         Oval = 0,
         Rectangle,
+		Cross,
+		LineH,
+		LineV
     }
+
+	public enum LevelType
+	{
+		Start = 0,
+		Red = 1,
+		Green = 2,
+		Blue = 3
+	}
 
 
     [RequireComponent(typeof(AutoTiling))]
@@ -76,8 +87,26 @@ namespace DungeonGenerator
 		private GameObject EndObject;
 
 		private int SEED = 123456;
+		private int currentRoomSeed;
 		
 		private int LevelCount = 1;
+		private LevelType currentLevelType = LevelType.Start;
+
+
+		private LevelType GetNextLevelType(LevelType inputLevelType){
+			switch (inputLevelType){
+
+				case (LevelType.Start):
+					return LevelType.Red;
+				case (LevelType.Red):
+					return LevelType.Green;
+				case (LevelType.Green):
+					return LevelType.Blue;
+				case (LevelType.Blue):
+					return LevelType.Red;
+			}
+			return LevelType.Red;
+		}
 
 		
 		private void ResetVars() {
@@ -90,6 +119,7 @@ namespace DungeonGenerator
 			minY = int.MaxValue;
 			maxX = int.MinValue;
 			maxY = int.MinValue;
+			Random.InitState(SEED);
 		}
 
 
@@ -102,6 +132,7 @@ namespace DungeonGenerator
 			ClearAll();
             GetComponent<AutoTiling>().ClearTiles();
 			ResetVars();
+			currentLevelType = GetNextLevelType(currentLevelType);
 			Debug.Log(LevelCount);
 			StartCoroutine(MapGenerateCoroutine());
 		}
@@ -122,6 +153,7 @@ namespace DungeonGenerator
         private void Start()
         {
 			Debug.Log(LevelCount);
+
 			ResetVars();
 			StartCoroutine(MapGenerateCoroutine());
         }
@@ -184,40 +216,52 @@ namespace DungeonGenerator
             }
         }
 		
-        /** Randomly Spawn Rooms **/
-        private IEnumerator SpawnRooms()
-        {
-		
-		System.Func<Vector2Int, int, Vector3> SpawnFunction = GetRandomPointInRect;
 
-		switch (randomSpawnType)
+        /// <summary>Randomly Spawn Rooms</summary>
+        private IEnumerator SpawnRooms()
 		{
-			case RandomSpawnType.Oval:
-				SpawnFunction = GetRandomPointInOval;
-				break;
-			case RandomSpawnType.Rectangle:
-				SpawnFunction = GetRandomPointInRect;
-				break;
-		}
-            // Randomly spawn rooms
-            for (int i = 0; i < generateRoomCnt; i++)
-            {
-			Random.InitState(SEED + i);
+
+			System.Func<Vector2Int, int, Vector3> SpawnFunction = GetRandomPointInRect;
+
+			switch (randomSpawnType)
+			{
+				case RandomSpawnType.Oval:
+					SpawnFunction = GetRandomPointInOval;
+					break;
+				case RandomSpawnType.Rectangle:
+					SpawnFunction = GetRandomPointInRect;
+					break;
+				case RandomSpawnType.Cross:
+					SpawnFunction = GetRandomPointInCross;
+					break;
+				case RandomSpawnType.LineH:
+					SpawnFunction = GetRandomPointInLineH;
+					break;
+				case RandomSpawnType.LineV:
+					SpawnFunction = GetRandomPointInLineV;
+					break;
+			}
+			// Randomly spawn rooms
+			for (int i = 0; i < generateRoomCnt; i++)
+			{
+				Random.InitState(SEED + i);
 				rooms.Add(Instantiate(gridPrefab, SpawnFunction(spawnRegionSize, i), Quaternion.identity));
 
-                if (i > selectRoomCnt) rooms[i].transform.localScale = GetRandomScale(smallMinRoomSize, smallMaxRoomSize);
-                else rooms[i].transform.localScale = GetRandomScale(minRoomSize, maxRoomSize);
+				if (i > selectRoomCnt) rooms[i].transform.localScale = GetRandomScale(smallMinRoomSize, smallMaxRoomSize);
+				else rooms[i].transform.localScale = GetRandomScale(minRoomSize, maxRoomSize);
 
-                yield return new WaitForSeconds(roomSpawnTerm);
-            }
+				yield return new WaitForSeconds(roomSpawnTerm);
+			}
 
-            // Dynamic for Physics Interaction
-            for (int i = 0; i < generateRoomCnt; i++)
-            {
-                rooms[i].GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
-                rooms[i].GetComponent<Rigidbody2D>().gravityScale = 0f;
-            }
-        }
+			// Dynamic for Physics Interaction
+			for (int i = 0; i < generateRoomCnt; i++)
+			{
+				rooms[i].GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+				rooms[i].GetComponent<Rigidbody2D>().gravityScale = 0f;
+			}
+		}
+		
+
         private Vector3 GetRandomPointInOval(Vector2Int size, int salt)
         {
             float theta = Random.Range(0, 2 * Mathf.PI);
@@ -230,6 +274,26 @@ namespace DungeonGenerator
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
             return new Vector3(width, height, 0);
+        }
+        private Vector3 GetRandomPointInCross(Vector2Int size, int salt)
+        {
+			bool isVertical = Random.value < 0.5f;
+            float width = Random.Range(-size.x, size.x);
+            float height = Random.Range(-size.y, size.y);
+			if (isVertical) return new Vector3(0, height, 0);
+			return new Vector3(width, 0, 0);
+        }
+        private Vector3 GetRandomPointInLineV(Vector2Int size, int salt)
+        {
+            float width = Random.Range(-size.x, size.x);
+            float height = Random.Range(-size.y, size.y);
+			return new Vector3(0, height, 0);
+        }
+        private Vector3 GetRandomPointInLineH(Vector2Int size, int salt)
+        {
+            float width = Random.Range(-size.x, size.x);
+            float height = Random.Range(-size.y, size.y);
+			return new Vector3(width, 0, 0);
         }
         private Vector3 GetRandomScale(int minS, int maxS)
         {
