@@ -92,33 +92,38 @@ namespace DungeonGenerator
 			maxY = int.MinValue;
 		}
 
-		public void Reset(){
+
+
+		///<summary>
+		///	clear objects and tilesets, to prepare for new level generation
+		///</summary>
+		private void Reset(){
 			LevelCount ++;
 			ClearAll();
             GetComponent<AutoTiling>().ClearTiles();
 			ResetVars();
 			Debug.Log(LevelCount);
 			StartCoroutine(MapGenerateCoroutine());
-			
-			
-			
 		}
-		
-		public void ClearAll(){ 
+
+		///<summary>
+		///	Destroy all objects on scene
+		///</summary>
+		private void ClearAll(){ 
 			Debug.Log("reached");
 			ClearObjects();
 			Destroy(PlayerObject);
 			Destroy(EndObject);
 		}
 		public List<GameObject> GetRooms(){ 
-		return rooms;
+			return rooms;
 		}
 		
         private void Start()
         {
-						Debug.Log(LevelCount);
+			Debug.Log(LevelCount);
 			ResetVars();
-            StartCoroutine(MapGenerateCoroutine());
+			StartCoroutine(MapGenerateCoroutine());
         }
 		
         private IEnumerator MapGenerateCoroutine()
