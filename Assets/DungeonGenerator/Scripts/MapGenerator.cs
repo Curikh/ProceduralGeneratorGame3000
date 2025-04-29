@@ -202,6 +202,7 @@ namespace DungeonGenerator
             // Randomly spawn rooms
             for (int i = 0; i < generateRoomCnt; i++)
             {
+			Random.InitState(SEED + i);
 				rooms.Add(Instantiate(gridPrefab, SpawnFunction(spawnRegionSize, i), Quaternion.identity));
 
                 if (i > selectRoomCnt) rooms[i].transform.localScale = GetRandomScale(smallMinRoomSize, smallMaxRoomSize);
@@ -219,7 +220,6 @@ namespace DungeonGenerator
         }
         private Vector3 GetRandomPointInOval(Vector2Int size, int salt)
         {
-			Random.InitState(SEED + salt);
             float theta = Random.Range(0, 2 * Mathf.PI);
             float rad = Mathf.Sqrt(Random.Range(0, 1f));
 
@@ -227,7 +227,6 @@ namespace DungeonGenerator
         }
         private Vector3 GetRandomPointInRect(Vector2Int size, int salt)
         {
-			Random.InitState(SEED + salt);
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
             return new Vector3(width, height, 0);
