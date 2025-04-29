@@ -184,23 +184,25 @@ namespace DungeonGenerator
             }
         }
 		
-		
         /** Randomly Spawn Rooms **/
         private IEnumerator SpawnRooms()
         {
+		
+		System.Func<Vector2Int, int, Vector3> SpawnFunction = GetRandomPointInRect;
 
+		switch (randomSpawnType)
+		{
+			case RandomSpawnType.Oval:
+				SpawnFunction = GetRandomPointInOval;
+				break;
+			case RandomSpawnType.Rectangle:
+				SpawnFunction = GetRandomPointInRect;
+				break;
+		}
             // Randomly spawn rooms
             for (int i = 0; i < generateRoomCnt; i++)
             {
-                switch (randomSpawnType)
-                {
-                    case RandomSpawnType.Oval:
-                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInOval(spawnRegionSize, i), Quaternion.identity));
-                        break;
-                    case RandomSpawnType.Rectangle:
-                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInRect(spawnRegionSize, i), Quaternion.identity));
-                        break;
-                }
+				rooms.Add(Instantiate(gridPrefab, SpawnFunction(spawnRegionSize, i), Quaternion.identity));
 
                 if (i > selectRoomCnt) rooms[i].transform.localScale = GetRandomScale(smallMinRoomSize, smallMaxRoomSize);
                 else rooms[i].transform.localScale = GetRandomScale(minRoomSize, maxRoomSize);
