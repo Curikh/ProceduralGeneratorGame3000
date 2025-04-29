@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static EndScript;
 
 namespace DungeonGenerator
 {
@@ -57,12 +56,12 @@ namespace DungeonGenerator
         [SerializeField] private GameObject playerPrefab;
 		[SerializeField] private GameObject endPrefab;
         
-        private List<GameObject> rooms = new List<GameObject>();
-        private HashSet<Delaunay.Vertex> vertices = new HashSet<Delaunay.Vertex>();
+        private List<GameObject> rooms;
+        private HashSet<Delaunay.Vertex> vertices;
         private List<Edge> hallwayEdges;
-        private List<GameObject> lineRenderers = new List<GameObject>();
-        private List<(int index, Vector2 pos)> selectedRooms = new List<(int, Vector2)>();
-        private List<GameObject> gridsList = new List<GameObject>();
+        private List<GameObject> lineRenderers;
+        private List<(int index, Vector2 pos)> selectedRooms;
+        private List<GameObject> gridsList;
 
         private int[,] map;
         private int minX = int.MaxValue, minY = int.MaxValue;
@@ -75,6 +74,8 @@ namespace DungeonGenerator
 
 		private GameObject PlayerObject;
 		private GameObject EndObject;
+
+		private int SEED = 123456;
 		
 		private int LevelCount = 1;
 
@@ -104,14 +105,10 @@ namespace DungeonGenerator
 		}
 		
 		public void ClearAll(){ 
-		Debug.Log("reached");
-		/*foreach (var room in rooms){
-			Debug.Log("1");
-			Destroy(room);
-		}*/
-		ClearObjects();
-		Destroy(PlayerObject);
-		Destroy(EndObject);
+			Debug.Log("reached");
+			ClearObjects();
+			Destroy(PlayerObject);
+			Destroy(EndObject);
 		}
 		public List<GameObject> GetRooms(){ 
 		return rooms;
@@ -120,6 +117,7 @@ namespace DungeonGenerator
         private void Start()
         {
 						Debug.Log(LevelCount);
+			ResetVars();
             StartCoroutine(MapGenerateCoroutine());
         }
 		
@@ -136,13 +134,14 @@ namespace DungeonGenerator
             MainRoomFraming();                                  // Frame Main rooms with walls
             yield return StartCoroutine(ConnectRooms());        // Connect Rooms ( Delaunay Triangulation and MST )
             yield return StartCoroutine(GenerateHallways());
-            CellularAutomata(smoothLevel);                      // Smooth ( I think it isn't necessary )
+            //CellularAutomata(smoothLevel);                      // Smooth ( I think it isn't necessary )
 
+		
             MapArrNormalization();                              // Normalize Map for auto tiling
             OnMapGenComplete();    
             SpawnPlayer();
 			SpawnEnd();
-			EndObject.GetComponent<EndScript>().event_1.AddListener(Reset);
+			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
 			
                              // Transfer Map Data for auto tiling
             if (isVisualizeProgress) yield return new WaitForSeconds(1f);

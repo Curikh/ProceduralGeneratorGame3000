@@ -1,17 +1,16 @@
 using UnityEngine;
 using UnityEngine.Events;
-using DungeonGenerator;
 
 
 public class EndScript : MonoBehaviour
 {
-	public UnityEvent event_1 = new UnityEvent();
+	public UnityEvent event_on_interaction = new UnityEvent();
 	void Update()
 	{
 		
 	}
      void OnMouseDown(){
         // this object was clicked - do something
-	event_1.Invoke();
+	event_on_interaction.Invoke();
  }
 }
