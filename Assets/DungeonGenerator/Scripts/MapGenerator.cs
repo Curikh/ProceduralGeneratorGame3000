@@ -120,7 +120,7 @@ namespace DungeonGenerator
 			minY = int.MaxValue;
 			maxX = int.MinValue;
 			maxY = int.MinValue;
-			Random.InitState(SEED);
+			Random.InitState(currentRoomSeed);
 		}
 
 
@@ -130,10 +130,12 @@ namespace DungeonGenerator
 		///</summary>
 		private void Reset(){
 			LevelCount ++;
+			currentRoomSeed += LevelCount;
 			ClearAll();
             GetComponent<AutoTiling>().ClearTiles();
 			ResetVars();
 			currentLevelType = GetNextLevelType(currentLevelType);
+			randomSpawnType = (RandomSpawnType)Random.Range(0, System.Enum.GetValues(typeof(RandomSpawnType)).Length);
 			Debug.Log(LevelCount);
 			StartCoroutine(MapGenerateCoroutine());
 		}
