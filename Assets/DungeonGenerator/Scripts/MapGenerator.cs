@@ -160,6 +160,12 @@ namespace DungeonGenerator
             if (playerPrefab != null)
             {
                 PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
+
+                CameraController cameraController = Camera.main.GetComponent<CameraController>();
+        if (cameraController != null)
+        {
+            cameraController.SetPlayerTarget(PlayerObject.transform);
+        }
                 Debug.Log($"Player spawned at: {StartPosition}");
             }
             else
