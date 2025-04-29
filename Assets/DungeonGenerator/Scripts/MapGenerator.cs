@@ -195,10 +195,10 @@ namespace DungeonGenerator
                 switch (randomSpawnType)
                 {
                     case RandomSpawnType.Oval:
-                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInOval(spawnRegionSize), Quaternion.identity));
+                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInOval(spawnRegionSize, i), Quaternion.identity));
                         break;
                     case RandomSpawnType.Rectangle:
-                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInRect(spawnRegionSize), Quaternion.identity));
+                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInRect(spawnRegionSize, i), Quaternion.identity));
                         break;
                 }
 
@@ -215,15 +215,17 @@ namespace DungeonGenerator
                 rooms[i].GetComponent<Rigidbody2D>().gravityScale = 0f;
             }
         }
-        private Vector3 GetRandomPointInOval(Vector2Int size)
+        private Vector3 GetRandomPointInOval(Vector2Int size, int salt)
         {
+			Random.InitState(SEED + salt);
             float theta = Random.Range(0, 2 * Mathf.PI);
             float rad = Mathf.Sqrt(Random.Range(0, 1f));
 
             return new Vector3(size.x * rad * Mathf.Cos(theta), size.y * rad * Mathf.Sin(theta));
         }
-        private Vector3 GetRandomPointInRect(Vector2Int size)
+        private Vector3 GetRandomPointInRect(Vector2Int size, int salt)
         {
+			Random.InitState(SEED + salt);
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
             return new Vector3(width, height, 0);
