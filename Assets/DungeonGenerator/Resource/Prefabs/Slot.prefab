@@ -67,8 +67,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 6140433826521694318, guid: 9b421d73333128c4a947c4805a1df677, type: 3}
-  m_Type: 0
+  m_Sprite: {fileID: 2600198273456256282, guid: f776c3fc7db7e174fa90cdcf640abb5e, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -113,6 +113,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a71b212a99ca4543bb21f8ac153d8f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  image: {fileID: 1504488802326858634}
-  selectedColor: {r: 0.16981131, g: 0.16981131, b: 0.16981131, a: 0}
-  notSelectedColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 0}
+  slotImage: {fileID: 1504488802326858634}
+  defaultSlotSprite: {fileID: 2600198273456256282, guid: f776c3fc7db7e174fa90cdcf640abb5e, type: 3}
+  selectedSlotSprite: {fileID: -6956823430751019991, guid: 4e91a5e4cb50b9c4ba2e5a885ce1bce8, type: 3}
