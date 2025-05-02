@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static EndScript;
 
 namespace DungeonGenerator
 {
@@ -22,7 +21,18 @@ namespace DungeonGenerator
     {
         Oval = 0,
         Rectangle,
+		Cross,
+		LineH,
+		LineV
     }
+
+	public enum LevelType
+	{
+		Start = 0,
+		Red = 1,
+		Green = 2,
+		Blue = 3
+	}
 
 
     [RequireComponent(typeof(AutoTiling))]
@@ -42,6 +52,7 @@ namespace DungeonGenerator
         [SerializeField] private int overlapWidth;              // Width to determine corridor ('L' shape or straight )
         [SerializeField] private int hallwayWidth;              // Width of hallway ( Recommend : lesser than 'maxRoomSize' )
         [SerializeField, Range(1, 9)] private int smoothLevel;  // 9 : Disable smooth
+		[SerializeField] private bool isExplodeOnRuntime;
 
 
         [Header("Visualize Generating Progress")]
@@ -57,12 +68,12 @@ namespace DungeonGenerator
         [SerializeField] private GameObject playerPrefab;
 		[SerializeField] private GameObject endPrefab;
         
-        private List<GameObject> rooms = new List<GameObject>();
-        private HashSet<Delaunay.Vertex> vertices = new HashSet<Delaunay.Vertex>();
+        private List<GameObject> rooms;
+        private HashSet<Delaunay.Vertex> vertices;
         private List<Edge> hallwayEdges;
-        private List<GameObject> lineRenderers = new List<GameObject>();
-        private List<(int index, Vector2 pos)> selectedRooms = new List<(int, Vector2)>();
-        private List<GameObject> gridsList = new List<GameObject>();
+        private List<GameObject> lineRenderers;
+        private List<(int index, Vector2 pos)> selectedRooms;
+        private List<GameObject> gridsList;
 
         private int[,] map;
         private int minX = int.MaxValue, minY = int.MaxValue;
@@ -75,8 +86,28 @@ namespace DungeonGenerator
 
 		private GameObject PlayerObject;
 		private GameObject EndObject;
+
+		private int SEED = 123456;
+		private int currentRoomSeed;
 		
 		private int LevelCount = 1;
+		private LevelType currentLevelType = LevelType.Start;
+
+
+		private LevelType GetNextLevelType(LevelType inputLevelType){
+			switch (inputLevelType){
+
+				case (LevelType.Start):
+					return LevelType.Red;
+				case (LevelType.Red):
+					return LevelType.Green;
+				case (LevelType.Green):
+					return LevelType.Blue;
+				case (LevelType.Blue):
+					return LevelType.Red;
+			}
+			return LevelType.Red;
+		}
 
 		
 		private void ResetVars() {
@@ -89,38 +120,48 @@ namespace DungeonGenerator
 			minY = int.MaxValue;
 			maxX = int.MinValue;
 			maxY = int.MinValue;
+			Random.InitState(currentRoomSeed);
 		}
 
-		public void Reset(){
+
+
+		///<summary>
+		///	clear objects and tilesets, to prepare for new level generation
+		///</summary>
+		private void Reset(){
 			LevelCount ++;
+			currentRoomSeed += LevelCount;
 			ClearAll();
             GetComponent<AutoTiling>().ClearTiles();
 			ResetVars();
+			currentLevelType = GetNextLevelType(currentLevelType);
+			randomSpawnType = (RandomSpawnType)Random.Range(0, System.Enum.GetValues(typeof(RandomSpawnType)).Length);
 			Debug.Log(LevelCount);
 			StartCoroutine(MapGenerateCoroutine());
-			
-			
-			
 		}
-		
-		public void ClearAll(){ 
-		Debug.Log("reached");
-		/*foreach (var room in rooms){
-			Debug.Log("1");
-			Destroy(room);
-		}*/
-		ClearObjects();
-		Destroy(PlayerObject);
-		Destroy(EndObject);
+
+		///<summary>
+		///	Destroy all objects on scene
+		///</summary>
+		private void ClearAll(){ 
+			Debug.Log("reached");
+			ClearObjects();
+			Destroy(PlayerObject);
+			Destroy(EndObject);
 		}
 		public List<GameObject> GetRooms(){ 
-		return rooms;
+			return rooms;
 		}
 		
         private void Start()
         {
-						Debug.Log(LevelCount);
-            StartCoroutine(MapGenerateCoroutine());
+			Debug.Log(LevelCount);
+			if (!isVisualizeProgress){
+				roomSpawnTerm = 0;
+			}
+
+			ResetVars();
+			StartCoroutine(MapGenerateCoroutine());
         }
 		
         private IEnumerator MapGenerateCoroutine()
@@ -138,11 +179,12 @@ namespace DungeonGenerator
             yield return StartCoroutine(GenerateHallways());
             CellularAutomata(smoothLevel);                      // Smooth ( I think it isn't necessary )
 
+		
             MapArrNormalization();                              // Normalize Map for auto tiling
             OnMapGenComplete();    
             SpawnPlayer();
 			SpawnEnd();
-			EndObject.GetComponent<EndScript>().event_1.AddListener(Reset);
+			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
 			
                              // Transfer Map Data for auto tiling
             if (isVisualizeProgress) yield return new WaitForSeconds(1f);
@@ -185,38 +227,88 @@ namespace DungeonGenerator
                 Debug.LogError("End prefab is not assigned in MapGenerator!");
             }
         }
+		private void TurnOnRoomGravity(GameObject room)
+		{
+			room.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+			room.GetComponent<Rigidbody2D>().gravityScale = 0f;
+		}
+		private GameObject InstatiateNewRoom(GameObject room_prefab, System.Func<Vector2Int, Vector3> SpawnFunction, Vector2Int size)
+		{
+			GameObject newRoom = Instantiate(gridPrefab, SpawnFunction(spawnRegionSize), Quaternion.identity);
+			newRoom.transform.localScale = GetRandomScale(size[0], size[1]);
+			return newRoom;
+
+		}
+		private GameObject InstatiateNewRoom(GameObject room_prefab, System.Func<Vector2Int, Vector3> SpawnFunction, Vector2Int size, bool explodeOnRuntime)
+		{
+			GameObject newRoom = Instantiate(gridPrefab, SpawnFunction(spawnRegionSize), Quaternion.identity);
+			if (explodeOnRuntime) TurnOnRoomGravity(newRoom);
+			newRoom.transform.localScale = GetRandomScale(size[0], size[1]);
+			return newRoom;
+
+		}
+
+		private void PopulateList(List<GameObject> listToAdd, Vector2Int size, int nToAdd,
+				GameObject room_prefab, System.Func<Vector2Int, Vector3> SpawnFunction)
+		{
+
+		}
+
 		
-		
-        /** Randomly Spawn Rooms **/
+
+        /// <summary>Randomly Spawn Rooms</summary>
         private IEnumerator SpawnRooms()
-        {
+		{
 
-            // Randomly spawn rooms
-            for (int i = 0; i < generateRoomCnt; i++)
-            {
-                switch (randomSpawnType)
-                {
-                    case RandomSpawnType.Oval:
-                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInOval(spawnRegionSize), Quaternion.identity));
-                        break;
-                    case RandomSpawnType.Rectangle:
-                        rooms.Add(Instantiate(gridPrefab, GetRandomPointInRect(spawnRegionSize), Quaternion.identity));
-                        break;
-                }
+			System.Func<Vector2Int, Vector3> SpawnFunction = GetRandomPointInRect;
 
-                if (i > selectRoomCnt) rooms[i].transform.localScale = GetRandomScale(smallMinRoomSize, smallMaxRoomSize);
-                else rooms[i].transform.localScale = GetRandomScale(minRoomSize, maxRoomSize);
+			switch (randomSpawnType)
+			{
+				case RandomSpawnType.Oval:
+					SpawnFunction = GetRandomPointInOval;
+					break;
+				case RandomSpawnType.Rectangle:
+					SpawnFunction = GetRandomPointInRect;
+					break;
+				case RandomSpawnType.Cross:
+					SpawnFunction = GetRandomPointInCross;
+					break;
+				case RandomSpawnType.LineH:
+					SpawnFunction = GetRandomPointInLineH;
+					break;
+				case RandomSpawnType.LineV:
+					SpawnFunction = GetRandomPointInLineV;
+					break;
+			}
 
-                yield return new WaitForSeconds(roomSpawnTerm);
-            }
 
-            // Dynamic for Physics Interaction
-            for (int i = 0; i < generateRoomCnt; i++)
-            {
-                rooms[i].GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
-                rooms[i].GetComponent<Rigidbody2D>().gravityScale = 0f;
-            }
-        }
+			// Randomly spawn rooms
+			for (int i = 0; i < selectRoomCnt; i++)
+			{
+				Random.InitState(SEED + i);
+
+				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(minRoomSize, maxRoomSize), isExplodeOnRuntime);
+				rooms.Add(newRoom);
+				yield return new WaitForSeconds(roomSpawnTerm);
+			}
+			for (int i = 0; i < generateRoomCnt - selectRoomCnt; i++)
+			{
+				Random.InitState(SEED + i);
+
+				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(smallMinRoomSize, smallMaxRoomSize), isExplodeOnRuntime);
+				rooms.Add(newRoom);
+				yield return new WaitForSeconds(roomSpawnTerm);
+			}
+			
+			if (!isExplodeOnRuntime) foreach (GameObject room in rooms) TurnOnRoomGravity(room);
+				
+		
+
+
+			// Dynamic for Physics Interaction
+		}
+		
+
         private Vector3 GetRandomPointInOval(Vector2Int size)
         {
             float theta = Random.Range(0, 2 * Mathf.PI);
@@ -229,6 +321,26 @@ namespace DungeonGenerator
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
             return new Vector3(width, height, 0);
+        }
+        private Vector3 GetRandomPointInCross(Vector2Int size)
+        {
+			bool isVertical = Random.value < 0.5f;
+            float width = Random.Range(-size.x, size.x);
+            float height = Random.Range(-size.y, size.y);
+			if (isVertical) return new Vector3(0, height, 0);
+			return new Vector3(width, 0, 0);
+        }
+        private Vector3 GetRandomPointInLineV(Vector2Int size)
+        {
+            float width = Random.Range(-size.x, size.x);
+            float height = Random.Range(-size.y, size.y);
+			return new Vector3(0, height, 0);
+        }
+        private Vector3 GetRandomPointInLineH(Vector2Int size)
+        {
+            float width = Random.Range(-size.x, size.x);
+            float height = Random.Range(-size.y, size.y);
+			return new Vector3(width, 0, 0);
         }
         private Vector3 GetRandomScale(int minS, int maxS)
         {
