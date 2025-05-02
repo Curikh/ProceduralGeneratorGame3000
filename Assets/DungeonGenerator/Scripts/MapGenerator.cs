@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Unity.Collections;
 
 namespace DungeonGenerator
 {
@@ -35,9 +36,39 @@ namespace DungeonGenerator
 	}
 
 
+
+
     [RequireComponent(typeof(AutoTiling))]
     public class MapGenerator : MonoBehaviour
     {
+
+		public struct RoomDescription
+		{
+			public int ID {get;}
+			public Vector2Int Size {get;}
+			public RoomType Type {get; set;}
+
+			public RoomDescription(int id, Vector2Int size, RoomType type)
+			{
+				this.ID = id;
+				this.Size = size;
+				this.Type = type;
+			}
+			public (int, Vector2Int, RoomType) GetValues()
+			{
+				return (ID, Size, Type);
+			}
+		}
+
+
+
+		public enum RoomType
+		{
+			Undefined,
+			Start,
+			End,
+			Generic
+		}
 
         [Header("Map Generate Variables")]
 		[SerializeField] private int SEED;
@@ -73,8 +104,11 @@ namespace DungeonGenerator
         private HashSet<Delaunay.Vertex> vertices;
         private List<Edge> hallwayEdges;
         private List<GameObject> lineRenderers;
-        private List<(int index, Vector2 pos)> selectedRooms;
         private List<GameObject> gridsList;
+
+		public List<RoomDescription> selectedRoomsDescriptions {get; private set;}
+		public NativeHashMap<int, RoomDescription> indexToRoomDescription ;
+
 
         private int[,] map;
         private int minX = int.MaxValue, minY = int.MaxValue;
@@ -87,6 +121,7 @@ namespace DungeonGenerator
 
 		private GameObject PlayerObject;
 		private GameObject EndObject;
+
 
 		private int currentRoomSeed;
 		
@@ -114,7 +149,8 @@ namespace DungeonGenerator
 			rooms = new List<GameObject>();
 			vertices = new HashSet<Delaunay.Vertex>();
 			lineRenderers = new List<GameObject>();
-			selectedRooms = new List<(int, Vector2)>();
+			selectedRoomsDescriptions = new List<RoomDescription>();
+			indexToRoomDescription = new NativeHashMap<int, RoomDescription>(selectRoomCnt, Allocator.Persistent);
 			gridsList = new List<GameObject>();
 			minX = int.MaxValue;
 			minY = int.MaxValue;
@@ -195,6 +231,16 @@ namespace DungeonGenerator
             
         }
 
+		private void GenerateRoomContent(RoomType roomType)
+		{
+			switch (roomType)
+			{
+				default:
+					return;
+			}
+				
+
+		}
          private void SpawnPlayer()
         {
             if (playerPrefab != null)
@@ -225,6 +271,9 @@ namespace DungeonGenerator
                 Debug.LogError("End prefab is not assigned in MapGenerator!");
             }
         }
+
+
+
 		private void TurnOnRoomGravity(GameObject room)
 		{
 			room.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
@@ -382,29 +431,28 @@ namespace DungeonGenerator
 
             // Select Rooms ( Except narrow room )
             int count = 0;
-            selectedRooms = new List<(int, Vector2)>();
             foreach (var roomInfo in sortedRooms)
             {
                 if (count >= roomCount) break;
                 GameObject room = rooms[roomInfo.index];
                 room.GetComponent<SpriteRenderer>().color = roomColor;
                 room.SetActive(true);
+				RoomDescription roomDescription = new RoomDescription(roomInfo.index, new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y), RoomType.Undefined);
+				indexToRoomDescription.Add(roomDescription.ID, roomDescription);
 
                 vertices.Add(new Delaunay.Vertex((int)room.transform.position.x, (int)room.transform.position.y));
-                selectedRooms.Add((roomInfo.index, new Vector2((int)room.transform.position.x, (int)room.transform.position.y)));
+				selectedRoomsDescriptions.Add(roomDescription);
                 count++;
             }
 
-            //selectedRooms.Sort((a, b) => b.size.CompareTo(a.size));
-            if (selectedRooms.Count > 1)
+            if (selectedRoomsDescriptions.Count > 1)
             {
-				Debug.Log("Selected {selectedRooms.Count} rooms");
-				//(int index, ) startRoom = selectedRooms[Random.Range(0,selectedRooms.Count)];
-				int startRoomIndex = selectedRooms[Random.Range(0,selectedRooms.Count)].index;	
+				Debug.Log("Selected {selectedRoomsDescriptions.Count} rooms");
+
+				int startRoomIndex = selectedRoomsDescriptions[Random.Range(0,selectedRoomsDescriptions.Count)].ID;	
 				int endRoomIndex;
 				do {
-					// endRoom = selectedRooms[Random.Range(0,selectedRooms.Count)];			
-					endRoomIndex = selectedRooms[Random.Range(0,selectedRooms.Count)].index;
+					endRoomIndex = selectedRoomsDescriptions[Random.Range(0,selectedRoomsDescriptions.Count)].ID;
 	
 				} while (endRoomIndex == startRoomIndex);
 			
@@ -455,8 +503,10 @@ namespace DungeonGenerator
         }
         private void MainRoomFraming()
         {
-            foreach (var (index, pos) in selectedRooms)
+            foreach (var roomDescription in selectedRoomsDescriptions)
             {
+				int index = roomDescription.ID;
+				Vector2Int size = roomDescription.Size;
                 int selectedId = index;
 
                 rooms[selectedId].GetComponent<SpriteRenderer>().color = roomColor;
@@ -801,7 +851,23 @@ namespace DungeonGenerator
         private void OnMapGenComplete()
         {
             if (GetComponent<AutoTiling>() != null)
-                GetComponent<AutoTiling>().SetMapInfos(ref map);
+
+			{
+				int rowLength = map.GetLength(0);
+				int colLength = map.GetLength(1);
+
+				for (int i = 0; i < rowLength; i++)
+				{
+					string printRow = "";
+					for (int j = 0; j < colLength; j++)
+					{
+						printRow += string.Format("{0} ", map[i, j]);
+						if ((j+1) %4 == 0) printRow += '\t';
+					}
+					// Debug.Log(printRow);
+				}
+				GetComponent<AutoTiling>().SetMapInfos(ref map);
+			}
 
             if (isVisualizeProgress)
             {
