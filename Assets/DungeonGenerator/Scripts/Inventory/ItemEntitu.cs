@@ -19,14 +19,34 @@ public class WorldItem : MonoBehaviour
         canPickUp = true;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+ private void OnTriggerEnter2D(Collider2D other)
     {
-        if (canPickUp && other.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
-            InventoryManager inventory = other.GetComponent<InventoryManager>();
-            if (inventory.AddItem(item))
+            if (item.type == ItemType.Coin)
             {
-                Destroy(gameObject);
+                PlayerCoins playerCoins = other.GetComponent<PlayerCoins>();
+                if (playerCoins != null)
+                {
+                    for (int i = 0; i < amount; i++)
+                    {
+                        playerCoins.AddCoin();
+                    }
+                }
+
+                Destroy(gameObject); // удаляем монету из мира
+            }
+            else
+            {
+                InventoryManager inventory = other.GetComponent<InventoryManager>();
+                if (inventory != null)
+                {
+                    bool wasPickedUp = inventory.AddItem(item);
+                    if (wasPickedUp)
+                    {
+                        Destroy(gameObject); // удаляем обычный предмет
+                    }
+                }
             }
         }
     }

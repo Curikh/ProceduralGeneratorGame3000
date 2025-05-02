@@ -20,7 +20,8 @@ public class Item : ScriptableObject {
 
 public enum ItemType {
     Poition,
-    Weapon
+    Weapon,
+    Coin
 }
 public enum ActionType {
     Use,
