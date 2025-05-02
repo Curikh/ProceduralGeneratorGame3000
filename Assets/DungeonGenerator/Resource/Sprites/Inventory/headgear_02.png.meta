@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      headgear_02_0: 1963392310892954394
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

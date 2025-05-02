@@ -1397,7 +1397,58 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      player_mirror_0: -5349358958616416532
+      player_mirror_1: -3411785148110383284
+      player_mirror_10: 4878274061540292583
+      player_mirror_11: -3245955806559728642
+      player_mirror_12: 8579708827237861281
+      player_mirror_13: 6209643329008627981
+      player_mirror_14: 894708903086146960
+      player_mirror_15: 5041477727474578516
+      player_mirror_16: -7063176501803092992
+      player_mirror_17: -5388167687377789819
+      player_mirror_18: 6651125360074330616
+      player_mirror_19: 7415531614163793249
+      player_mirror_2: 1969978224749762715
+      player_mirror_20: 4979636711493981223
+      player_mirror_21: 6717602133442579061
+      player_mirror_22: -6526970567746916789
+      player_mirror_23: -2403188651500227301
+      player_mirror_24: 6011077410622941146
+      player_mirror_25: 2367094949622406986
+      player_mirror_26: 4172630036357508420
+      player_mirror_27: -871564128710448010
+      player_mirror_28: -7583537208374008638
+      player_mirror_29: -1995021916180148141
+      player_mirror_3: -7631211129538565959
+      player_mirror_30: -2714030398370741454
+      player_mirror_31: -3835231973672009383
+      player_mirror_32: 9081311805264461315
+      player_mirror_33: 4818899941114423183
+      player_mirror_34: -1881428572092996761
+      player_mirror_35: 6648208889325931652
+      player_mirror_36: -2715439524632929893
+      player_mirror_37: -4156437467808964072
+      player_mirror_38: 5313770528822986750
+      player_mirror_39: -6546354622874115347
+      player_mirror_4: 8149695832918073074
+      player_mirror_40: -311517650482741681
+      player_mirror_41: 325899804043590935
+      player_mirror_42: 725356122477974017
+      player_mirror_43: 4044374241998709879
+      player_mirror_44: 2164764701377989086
+      player_mirror_45: 7976097985079165634
+      player_mirror_46: -2350315711327509421
+      player_mirror_47: -6715940818914473467
+      player_mirror_48: 632132889713480939
+      player_mirror_49: 6670088955573328694
+      player_mirror_5: 7545529708769687418
+      player_mirror_50: 7990031118916036351
+      player_mirror_6: -4782932209023843343
+      player_mirror_7: 831518816188536083
+      player_mirror_8: 3945188239719046302
+      player_mirror_9: -8896856737803775044
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

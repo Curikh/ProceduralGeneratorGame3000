@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      fablic_clothe_0: 7095132209187716081
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

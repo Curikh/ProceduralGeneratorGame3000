@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      wooden_shield_0: 605865996486828578
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

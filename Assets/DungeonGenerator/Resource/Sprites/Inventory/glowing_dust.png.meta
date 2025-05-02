@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      glowing_dust_0: -5171892732019224827
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

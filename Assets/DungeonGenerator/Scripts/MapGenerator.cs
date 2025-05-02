@@ -64,6 +64,9 @@ namespace DungeonGenerator
         [SerializeField] private float lineWidth;               // Width of all lines
         [SerializeField] private float lineDrawTerm;            // Time between creating and deleting a LineRenderer.
 
+        [Header("Player Reference")]
+        [SerializeField] private Transform playerTransform;
+
         [Header("Objects Spawn")]
         [SerializeField] private GameObject playerPrefab;
 		[SerializeField] private GameObject endPrefab;
@@ -128,16 +131,20 @@ namespace DungeonGenerator
 		///<summary>
 		///	clear objects and tilesets, to prepare for new level generation
 		///</summary>
-		private void Reset(){
-			LevelCount ++;
-			currentRoomSeed += LevelCount;
-			ClearAll();
-            GetComponent<AutoTiling>().ClearTiles();
-			ResetVars();
-			currentLevelType = GetNextLevelType(currentLevelType);
-			randomSpawnType = (RandomSpawnType)Random.Range(0, System.Enum.GetValues(typeof(RandomSpawnType)).Length);
-			Debug.Log(LevelCount);
-			StartCoroutine(MapGenerateCoroutine());
+private void Reset()
+{
+    LevelCount++;
+    currentRoomSeed += LevelCount;
+    ClearAll();
+    GetComponent<AutoTiling>().ClearTiles();
+    ResetVars();
+    currentLevelType = GetNextLevelType(currentLevelType);
+    
+    // Телепортируем игрока в безопасное место на время генерации
+    if (playerTransform != null)
+        playerTransform.position = new Vector3(-100, -100, 0);
+    
+    StartCoroutine(MapGenerateCoroutine());
 		}
 
 		///<summary>
@@ -197,30 +204,30 @@ namespace DungeonGenerator
             
         }
 
-         private void SpawnPlayer()
-        {
-            if (playerPrefab != null)
-            {
-                PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
-
-                CameraController cameraController = Camera.main.GetComponent<CameraController>();
+         private void SpawnPlayer(){
+       if (playerTransform != null)
+    {
+        playerTransform.position = StartPosition;
+        Debug.Log($"Player teleported to: {StartPosition}");
+        
+        // Обновление камеры
+        CameraController cameraController = Camera.main.GetComponent<CameraController>();
         if (cameraController != null)
         {
-            cameraController.SetPlayerTarget(PlayerObject.transform);
+            cameraController.SetPlayerTarget(playerTransform);
         }
-                Debug.Log($"Player spawned at: {StartPosition}");
-            }
-            else
-            {
-                Debug.LogError("Player prefab is not assigned in MapGenerator!");
-            }
-        }
+    }
+    else
+    {
+        Debug.LogError("Player transform is not assigned in MapGenerator!");
+    }
+         }
+
 		private void SpawnEnd()
         {
             if (endPrefab != null)
             {
                 EndObject = Instantiate(endPrefab, EndPosition, Quaternion.identity);
-                Debug.Log($"End spawned at: {EndPosition}");
             }
             else
             {
