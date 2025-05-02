@@ -40,6 +40,7 @@ namespace DungeonGenerator
     {
 
         [Header("Map Generate Variables")]
+		[SerializeField] private int SEED;
         [SerializeField] private GameObject gridPrefab;
         [SerializeField] private RandomSpawnType randomSpawnType;   // Shape of the Region for randomly selected room position
         [SerializeField] private Vector2Int spawnRegionSize;    // Size of Region
@@ -87,7 +88,6 @@ namespace DungeonGenerator
 		private GameObject PlayerObject;
 		private GameObject EndObject;
 
-		private int SEED = 123456;
 		private int currentRoomSeed;
 		
 		private int LevelCount = 1;
@@ -155,11 +155,9 @@ namespace DungeonGenerator
 		
         private void Start()
         {
+			if (SEED == 0) SEED = Random.Range(int.MinValue, int.MaxValue);
+			if (!isVisualizeProgress)roomSpawnTerm = 0;
 			Debug.Log(LevelCount);
-			if (!isVisualizeProgress){
-				roomSpawnTerm = 0;
-			}
-
 			ResetVars();
 			StartCoroutine(MapGenerateCoroutine());
         }
