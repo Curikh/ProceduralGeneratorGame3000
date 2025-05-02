@@ -45,18 +45,20 @@ namespace DungeonGenerator
 		public struct RoomDescription
 		{
 			public int ID {get;}
-			public Vector2Int Size {get;}
+			public Vector2 Size {get;}
 			public RoomType Type {get; set;}
+			public Vector3 Position {get; set;}
 
-			public RoomDescription(int id, Vector2Int size, RoomType type)
+			public RoomDescription(int id, Vector2 size, RoomType type, Vector3 position)
 			{
 				this.ID = id;
 				this.Size = size;
 				this.Type = type;
+				Position = position;
 			}
-			public (int, Vector2Int, RoomType) GetValues()
+			public (int, Vector2, RoomType, Vector3) GetValues()
 			{
-				return (ID, Size, Type);
+				return (ID, Size, Type, Position);
 			}
 		}
 
@@ -99,6 +101,8 @@ namespace DungeonGenerator
         [Header("Objects Spawn")]
         [SerializeField] private GameObject playerPrefab;
 		[SerializeField] private GameObject endPrefab;
+		[SerializeField] private GameObject enemyPrefab;
+		[SerializeField] private GameObject chestPrefab;
         
         private List<GameObject> rooms;
         private HashSet<Delaunay.Vertex> vertices;
@@ -194,6 +198,7 @@ namespace DungeonGenerator
 			if (SEED == 0) SEED = Random.Range(int.MinValue, int.MaxValue);
 			if (!isVisualizeProgress)roomSpawnTerm = 0;
 			Debug.Log(LevelCount);
+			currentRoomSeed = SEED;
 			ResetVars();
 			StartCoroutine(MapGenerateCoroutine());
         }
@@ -216,8 +221,8 @@ namespace DungeonGenerator
 		
             MapArrNormalization();                              // Normalize Map for auto tiling
             OnMapGenComplete();    
-            SpawnPlayer();
-			SpawnEnd();
+			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
+
 			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
 			
                              // Transfer Map Data for auto tiling
@@ -231,34 +236,67 @@ namespace DungeonGenerator
             
         }
 
-		private void GenerateRoomContent(RoomType roomType)
+		private void GenerateRoomContent(RoomDescription room)
 		{
+			Debug.Log("Room " + room.Type);
+			RoomType roomType = room.Type;
 			switch (roomType)
 			{
+				case RoomType.Start:
+					SpawnPlayer();
+					break;
+				case RoomType.End:
+					SpawnEnd();
+					break;
 				default:
-					return;
+					SpawnGeneric(room);
+					break;
 			}
 				
 
 		}
-         private void SpawnPlayer()
-        {
-            if (playerPrefab != null)
-            {
-                PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
+		private void SpawnGeneric(RoomDescription room)
+		{
+			(float left_fix, float right_fix) = (-room.Size.x/2, room.Size.x/2);
+			(float top_fix, float bottom_fix) = (-room.Size.y/2, room.Size.y/2);
 
-                CameraController cameraController = Camera.main.GetComponent<CameraController>();
-        if (cameraController != null)
-        {
-            cameraController.SetPlayerTarget(PlayerObject.transform);
-        }
-                Debug.Log($"Player spawned at: {StartPosition}");
-            }
-            else
-            {
-                Debug.LogError("Player prefab is not assigned in MapGenerator!");
-            }
-        }
+			float[,] bounds = new float[2,2];
+			bounds[0,0] = room.Position.x + left_fix;
+			bounds[0,1] = room.Position.x + right_fix;
+			bounds[1,0] = room.Position.y + top_fix;
+			bounds[1,1] = room.Position.y + bottom_fix;
+
+			Random.InitState(currentRoomSeed++);
+			float coordinate_x = (bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];
+			float coordinate_y = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+			Instantiate(enemyPrefab, new Vector2(coordinate_x, coordinate_y), Quaternion.identity);
+
+			Random.InitState(currentRoomSeed++);
+			coordinate_x = (bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];
+			coordinate_y = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+			Instantiate(chestPrefab, new Vector2(coordinate_x, coordinate_y), Quaternion.identity);
+			
+
+
+		}
+         private void SpawnPlayer()
+		 {
+			 if (playerPrefab != null)
+			 {
+				 PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
+
+				 CameraController cameraController = Camera.main.GetComponent<CameraController>();
+				 if (cameraController != null)
+				 {
+					 cameraController.SetPlayerTarget(PlayerObject.transform);
+				 }
+				 Debug.Log($"Player spawned at: {StartPosition}");
+			 }
+			 else
+			 {
+				 Debug.LogError("Player prefab is not assigned in MapGenerator!");
+			 }
+		 }
 		private void SpawnEnd()
         {
             if (endPrefab != null)
@@ -332,7 +370,7 @@ namespace DungeonGenerator
 			// Randomly spawn rooms
 			for (int i = 0; i < selectRoomCnt; i++)
 			{
-				Random.InitState(SEED + i);
+				Random.InitState(currentRoomSeed ++);
 
 				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(minRoomSize, maxRoomSize), isExplodeOnRuntime);
 				rooms.Add(newRoom);
@@ -340,7 +378,7 @@ namespace DungeonGenerator
 			}
 			for (int i = 0; i < generateRoomCnt - selectRoomCnt; i++)
 			{
-				Random.InitState(SEED + i);
+				Random.InitState(currentRoomSeed ++);
 
 				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(smallMinRoomSize, smallMaxRoomSize), isExplodeOnRuntime);
 				rooms.Add(newRoom);
@@ -363,12 +401,14 @@ namespace DungeonGenerator
 
             return new Vector3(size.x * rad * Mathf.Cos(theta), size.y * rad * Mathf.Sin(theta));
         }
+
         private Vector3 GetRandomPointInRect(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
             return new Vector3(width, height, 0);
         }
+
         private Vector3 GetRandomPointInCross(Vector2Int size)
         {
 			bool isVertical = Random.value < 0.5f;
@@ -377,18 +417,21 @@ namespace DungeonGenerator
 			if (isVertical) return new Vector3(0, height, 0);
 			return new Vector3(width, 0, 0);
         }
+
         private Vector3 GetRandomPointInLineV(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
 			return new Vector3(0, height, 0);
         }
+
         private Vector3 GetRandomPointInLineH(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
 			return new Vector3(width, 0, 0);
         }
+
         private Vector3 GetRandomScale(int minS, int maxS)
         {
             int x = Random.Range(minS, maxS) * 2;
@@ -437,7 +480,7 @@ namespace DungeonGenerator
                 GameObject room = rooms[roomInfo.index];
                 room.GetComponent<SpriteRenderer>().color = roomColor;
                 room.SetActive(true);
-				RoomDescription roomDescription = new RoomDescription(roomInfo.index, new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y), RoomType.Undefined);
+				RoomDescription roomDescription = new RoomDescription(roomInfo.index, new Vector2(room.transform.localScale.x, room.transform.localScale.y), RoomType.Generic, room.transform.position);
 				indexToRoomDescription.Add(roomDescription.ID, roomDescription);
 
                 vertices.Add(new Delaunay.Vertex((int)room.transform.position.x, (int)room.transform.position.y));
@@ -449,15 +492,23 @@ namespace DungeonGenerator
             {
 				Debug.Log("Selected {selectedRoomsDescriptions.Count} rooms");
 
-				int startRoomIndex = selectedRoomsDescriptions[Random.Range(0,selectedRoomsDescriptions.Count)].ID;	
-				int endRoomIndex;
+				int randomRoomIndex = Random.Range(0,selectedRoomsDescriptions.Count);
+				RoomDescription startRoom = selectedRoomsDescriptions[randomRoomIndex];
+				startRoom.Type = RoomType.Start;
+				selectedRoomsDescriptions[randomRoomIndex] = startRoom;
+				int startRoomID = startRoom.ID;
+
+				int endRoomID; RoomDescription endRoom;
 				do {
-					endRoomIndex = selectedRoomsDescriptions[Random.Range(0,selectedRoomsDescriptions.Count)].ID;
-	
-				} while (endRoomIndex == startRoomIndex);
+					randomRoomIndex = Random.Range(0,selectedRoomsDescriptions.Count);
+					endRoom = selectedRoomsDescriptions[randomRoomIndex];
+					endRoomID = endRoom.ID;
+				} while (endRoomID == startRoomID);
+				endRoom.Type = RoomType.End;
+				selectedRoomsDescriptions[randomRoomIndex] = endRoom;
 			
-				StartPosition = rooms[startRoomIndex].transform.position;
-				EndPosition = rooms[endRoomIndex].transform.position;
+				StartPosition = rooms[startRoomID].transform.position;
+				EndPosition = rooms[endRoomID].transform.position;
             }
 			else Debug.Log("Too few rooms!");
 
@@ -506,7 +557,7 @@ namespace DungeonGenerator
             foreach (var roomDescription in selectedRoomsDescriptions)
             {
 				int index = roomDescription.ID;
-				Vector2Int size = roomDescription.Size;
+				Vector2Int size = new Vector2Int((int)roomDescription.Size.x, (int)roomDescription.Size.y);
                 int selectedId = index;
 
                 rooms[selectedId].GetComponent<SpriteRenderer>().color = roomColor;
