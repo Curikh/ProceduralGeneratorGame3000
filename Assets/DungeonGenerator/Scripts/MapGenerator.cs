@@ -134,6 +134,7 @@ namespace DungeonGenerator
 
 		private GameObject PlayerObject;
 		private GameObject EndObject;
+		private List<GameObject> ObjectsToClear;
 
 
 		private int currentRoomSeed;
@@ -169,6 +170,7 @@ namespace DungeonGenerator
 			indexToRoomDescription = new NativeHashMap<int, RoomDescription>(selectRoomCnt, Allocator.Persistent);
 			gridsList = new List<GameObject>();
 			NoNoCoords = new List<Vector3>();
+			ObjectsToClear = new List<GameObject>();
 			minX = int.MaxValue;
 			minY = int.MaxValue;
 			maxX = int.MinValue;
@@ -203,13 +205,14 @@ private void Reset()
 		private void ClearAll(){ 
 			Debug.Log("reached");
 			ClearObjects();
-			Destroy(PlayerObject);
-			Destroy(EndObject);
+			foreach (GameObject _object in ObjectsToClear) Destroy(_object);
+
 		}
+
 		public List<GameObject> GetRooms(){ 
 			return rooms;
 		}
-		
+
         private void Start()
         {
 			if (SEED == 0) SEED = Random.Range(int.MinValue, int.MaxValue);
@@ -293,7 +296,7 @@ private void Reset()
 
 			float coordinate_x = (right_bound_enemy - left_bound_enemy) * Random.value + left_bound_enemy;
 			float coordinate_y = (bottom_bound_enemy - top_bound_enemy) * Random.value + top_bound_enemy;
-			Instantiate(enemyPrefab, new Vector2(coordinate_x, coordinate_y), Quaternion.identity);
+			ObjectsToClear.Add(Instantiate(enemyPrefab, new Vector2(coordinate_x, coordinate_y), Quaternion.identity));
 
 			int randomWall = (int)Random.Range(0,3);
 
@@ -360,7 +363,8 @@ private void Reset()
 			Debug.Log("positionGlobal: "+ chestCoords.ToString());
 			Debug.Log("isNoNoBound: " +  isNoNoBound(chestBounds).ToString());
 			counter ++;
-			} while (isNoNoBound(chestBounds));
+			} while (isNoNoBound(chestBounds) && counter < 100);
+			ObjectsToClear.Add(chest);
 			
 		}
 
@@ -370,6 +374,9 @@ private void Reset()
 			 if (playerPrefab != null)
 			 {
 				 PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
+				 ObjectsToClear.Add(PlayerObject);
+				 
+				 
 
 				 CameraController cameraController = Camera.main.GetComponent<CameraController>();
 				 if (cameraController != null)
@@ -388,6 +395,7 @@ private void Reset()
             if (endPrefab != null)
             {
                 EndObject = Instantiate(endPrefab, EndPosition, Quaternion.identity);
+				 ObjectsToClear.Add(EndObject);
             }
             else
             {

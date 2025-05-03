@@ -111,6 +111,8 @@ namespace DungeonGenerator
 			wallTopTilemap.ClearAllTiles();
 			cliffTilemap.ClearAllTiles();
 			shadowTilemap.ClearAllTiles();
+			nonoTilemap.ClearAllTiles();
+
 		}
 
 		public bool IsNoNoCoord(Vector3Int coords)
