@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      leather_arm_guard_0: -921959696511317758
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

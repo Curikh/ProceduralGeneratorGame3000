@@ -12,6 +12,7 @@ namespace DungeonGenerator
         [SerializeField] private Tilemap wallTopTilemap;
         [SerializeField] private Tilemap cliffTilemap;
         [SerializeField] private Tilemap shadowTilemap;
+        [SerializeField] public Tilemap nonoTilemap;
 
         [Header("Tiles")]
         [SerializeField] private Tile wall_Top_Left;
@@ -28,7 +29,7 @@ namespace DungeonGenerator
         [SerializeField] private Tile wall_Center_Right;
         [SerializeField] private Tile wall_Center_Left;
         [SerializeField] private Tile floor;
-        [SerializeField] private Tile cliff_0;
+        [SerializeField] public Tile cliff_0;
         [SerializeField] private Tile cliff_1;
         [SerializeField] private Tile wall_T;
 
@@ -101,12 +102,25 @@ namespace DungeonGenerator
 
         int[] dirX = { 1, 0, -1, 1, 0, -1, 1, 0, -1 };
         int[] dirY = { -1, -1, -1, 0, 0, 0, 1, 1, 1 };
-		public void ClearTiles(){
+
+
+		public void ClearTiles()
+		{
 			floorTilemap.ClearAllTiles();
 			wallTilemap.ClearAllTiles();
 			wallTopTilemap.ClearAllTiles();
 			cliffTilemap.ClearAllTiles();
 			shadowTilemap.ClearAllTiles();
+		}
+
+		public bool IsNoNoCoord(Vector3Int coords)
+		{
+			return nonoTilemap.GetTile(coords) == cliff_0;
+		}
+
+		public bool IsNoNoTile(TileBase tile)
+		{
+			return tile == cliff_0;
 		}
 
         public void TilingMap()
@@ -130,6 +144,58 @@ namespace DungeonGenerator
 
             }
 
+			int width = Mathf.Max(map.GetLength(0), wallTilemap.size.x, wallTopTilemap.size.x);
+			int height = Mathf.Max(map.GetLength(1), wallTilemap.size.y, wallTopTilemap.size.y);
+			Debug.Log("Width: " +  width + "Height: " + height);
+			int tightPassageDetectionRadius = GetComponent<MapGenerator>().tightPassageRadius;
+
+			bool hasEatherWall(Vector3Int coords)
+			{
+				bool hasWallTile = wallTilemap.GetTile(coords) != null;
+				bool hasWallTopTile = wallTopTilemap.GetTile(coords) != null;
+				return hasWallTile || hasWallTopTile;
+			}
+
+            for (int x = width; x >= 0; x--)
+            {
+                for (int y = height; y >= 0; y--)
+                {
+					Vector3Int coords = new (x, y, 0);
+					bool hasFloor = floorTilemap.GetTile(coords) != null;
+					bool hasWall = hasEatherWall(coords);
+					if (!(hasFloor || hasWall)) continue;
+					if (hasFloor && !hasWall) continue;
+					int[] xDim = {0, -1, 1, 0};
+					int[] yDim = {-1, 0, 0, 1};
+					for (int i = 0; i < xDim.GetLength(0); i++)
+					{
+						int newX = x + xDim[i];
+						int newY = y + yDim[i];
+						coords = new (newX, newY, 0);
+						if (hasEatherWall(coords))
+						{
+							xDim[i] = 0;
+							yDim[i] = 0;
+						}
+					}
+
+					for (int n = 1; n < tightPassageDetectionRadius; n++){
+						for (int i = 0; i < xDim.GetLength(0); i++)
+						{
+							if (xDim[i] == yDim[i]) continue;
+							int newX = x + xDim[i] * n;
+							int newY = y + yDim[i] * n;
+							coords = new (newX, newY, 0);
+							// Vector3Int coords_1 = new (newX, newY+1, 0);
+							Tile tileToPlace = cliff_1;
+							if (nonoTilemap.GetTile(coords) != null) tileToPlace = cliff_0;
+							nonoTilemap.SetTile(coords, tileToPlace);
+							// nonoTilemap.SetTile(coords_1, tileToPlace);
+						}
+					}
+
+				}
+			}
             // Process Exception Tiles
             for (int i = map.GetLength(0) - 1; i >= 0; i--)
             {
@@ -162,6 +228,7 @@ namespace DungeonGenerator
         AddColliderToTilemap(wallTilemap);
         AddColliderToTilemap(wallTopTilemap);
     }
+
 
     // Вспомогательный метод для настройки коллайдеров
        private void AddColliderToTilemap(Tilemap tilemap)
@@ -233,6 +300,7 @@ namespace DungeonGenerator
                         }
                     }
                     break;
+
                 default:
                     break;
             }
@@ -273,12 +341,13 @@ namespace DungeonGenerator
         {
             Vector3Int tilePos = new Vector3Int(x, y, 0);
 
-            if ((wallTilemap.GetTile(tilePos) == wall_Top ||
-                wallTilemap.GetTile(tilePos) == wall_Bottom_Right ||
-                wallTilemap.GetTile(tilePos) == wall_Bottom_Left ||
-                wallTilemap.GetTile(tilePos) == wall_Top_Center) && map[y, x] == (int)GridType.None)
+			TileBase tile = wallTilemap.GetTile(tilePos);
+            if ((tile == wall_Top ||
+                tile == wall_Bottom_Right ||
+                tile == wall_Bottom_Left ||
+                tile == wall_Top_Center) && map[y, x] == (int)GridType.None)
             {
-                wallTopTilemap.SetTile(tilePos, wallTilemap.GetTile(tilePos));
+                wallTopTilemap.SetTile(tilePos, tile);
                 wallTilemap.SetTile(tilePos, null);
             }
         }
@@ -326,6 +395,7 @@ namespace DungeonGenerator
         {
             return (pattern & mask) == match;
         }
+
         int CalculatePattern(int x, int y)
         {
             int pattern = 0;

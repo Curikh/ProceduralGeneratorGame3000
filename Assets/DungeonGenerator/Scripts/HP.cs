@@ -6,7 +6,11 @@ public class PlayerHealth : MonoBehaviour
     [Header("HP Settings")]
     public int maxHealth = 3;
     public int currentHealth;
-    public Image[] hearts; // Массив изображений сердец
+    public Image[] heartImages; // Массив компонентов Image для сердец
+
+    [Header("Sprites")]
+    public Sprite fullHeart;
+    public Sprite emptyHeart;
 
     [Header("Debug")]
     public Button increaseHealthButton;
@@ -17,7 +21,7 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = maxHealth;
         UpdateHearts();
 
-        // Настройка отладочных кнопок
+        // Настройка кнопок отладки
         if (increaseHealthButton != null)
             increaseHealthButton.onClick.AddListener(IncreaseHealth);
         
@@ -50,9 +54,11 @@ public class PlayerHealth : MonoBehaviour
 
     void UpdateHearts()
     {
-        for (int i = 0; i < hearts.Length; i++)
+        for (int i = 0; i < heartImages.Length; i++)
         {
-            hearts[i].enabled = i < currentHealth;
+            // Показываем все Image, но меняем спрайты
+            heartImages[i].enabled = true;
+            heartImages[i].sprite = i < currentHealth ? fullHeart : emptyHeart;
         }
     }
 

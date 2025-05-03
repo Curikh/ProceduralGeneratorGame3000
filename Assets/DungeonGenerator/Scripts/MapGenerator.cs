@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Unity.Collections;
 
 namespace DungeonGenerator
 {
@@ -35,11 +36,44 @@ namespace DungeonGenerator
 	}
 
 
+
+
     [RequireComponent(typeof(AutoTiling))]
     public class MapGenerator : MonoBehaviour
     {
 
+		public struct RoomDescription
+		{
+			public int ID {get;}
+			public Vector2 Size {get;}
+			public RoomType Type {get; set;}
+			public Vector3 Position {get; set;}
+
+			public RoomDescription(int id, Vector2 size, RoomType type, Vector3 position)
+			{
+				this.ID = id;
+				this.Size = size;
+				this.Type = type;
+				Position = position;
+			}
+			public (int, Vector2, RoomType, Vector3) GetValues()
+			{
+				return (ID, Size, Type, Position);
+			}
+		}
+
+
+
+		public enum RoomType
+		{
+			Undefined,
+			Start,
+			End,
+			Generic
+		}
+
         [Header("Map Generate Variables")]
+		[SerializeField] private int SEED;
         [SerializeField] private GameObject gridPrefab;
         [SerializeField] private RandomSpawnType randomSpawnType;   // Shape of the Region for randomly selected room position
         [SerializeField] private Vector2Int spawnRegionSize;    // Size of Region
@@ -54,6 +88,12 @@ namespace DungeonGenerator
         [SerializeField, Range(1, 9)] private int smoothLevel;  // 9 : Disable smooth
 		[SerializeField] private bool isExplodeOnRuntime;
 
+		[Header("Room Generate Variables")]
+		[SerializeField] private float chestBorderFix;
+		[SerializeField] private float enemyCentreDelimiter;
+		[SerializeField] public int tightPassageRadius;
+
+
 
         [Header("Visualize Generating Progress")]
         [SerializeField] private bool isVisualizeProgress;      // On/Off
@@ -64,16 +104,24 @@ namespace DungeonGenerator
         [SerializeField] private float lineWidth;               // Width of all lines
         [SerializeField] private float lineDrawTerm;            // Time between creating and deleting a LineRenderer.
 
+        [Header("Player Reference")]
+        [SerializeField] private Transform playerTransform;
+
         [Header("Objects Spawn")]
         [SerializeField] private GameObject playerPrefab;
 		[SerializeField] private GameObject endPrefab;
+		[SerializeField] private GameObject enemyPrefab;
+		[SerializeField] private GameObject chestPrefab;
         
         private List<GameObject> rooms;
         private HashSet<Delaunay.Vertex> vertices;
         private List<Edge> hallwayEdges;
         private List<GameObject> lineRenderers;
-        private List<(int index, Vector2 pos)> selectedRooms;
         private List<GameObject> gridsList;
+
+		public List<RoomDescription> selectedRoomsDescriptions {get; private set;}
+		public NativeHashMap<int, RoomDescription> indexToRoomDescription ;
+
 
         private int[,] map;
         private int minX = int.MaxValue, minY = int.MaxValue;
@@ -87,11 +135,14 @@ namespace DungeonGenerator
 		private GameObject PlayerObject;
 		private GameObject EndObject;
 
-		private int SEED = 123456;
+
 		private int currentRoomSeed;
 		
 		private int LevelCount = 1;
 		private LevelType currentLevelType = LevelType.Start;
+
+
+		private List<Vector3> NoNoCoords;
 
 
 		private LevelType GetNextLevelType(LevelType inputLevelType){
@@ -114,8 +165,10 @@ namespace DungeonGenerator
 			rooms = new List<GameObject>();
 			vertices = new HashSet<Delaunay.Vertex>();
 			lineRenderers = new List<GameObject>();
-			selectedRooms = new List<(int, Vector2)>();
+			selectedRoomsDescriptions = new List<RoomDescription>();
+			indexToRoomDescription = new NativeHashMap<int, RoomDescription>(selectRoomCnt, Allocator.Persistent);
 			gridsList = new List<GameObject>();
+			NoNoCoords = new List<Vector3>();
 			minX = int.MaxValue;
 			minY = int.MaxValue;
 			maxX = int.MinValue;
@@ -128,16 +181,20 @@ namespace DungeonGenerator
 		///<summary>
 		///	clear objects and tilesets, to prepare for new level generation
 		///</summary>
-		private void Reset(){
-			LevelCount ++;
-			currentRoomSeed += LevelCount;
-			ClearAll();
-            GetComponent<AutoTiling>().ClearTiles();
-			ResetVars();
-			currentLevelType = GetNextLevelType(currentLevelType);
-			randomSpawnType = (RandomSpawnType)Random.Range(0, System.Enum.GetValues(typeof(RandomSpawnType)).Length);
-			Debug.Log(LevelCount);
-			StartCoroutine(MapGenerateCoroutine());
+private void Reset()
+{
+    LevelCount++;
+    currentRoomSeed += LevelCount;
+    ClearAll();
+    GetComponent<AutoTiling>().ClearTiles();
+    ResetVars();
+    currentLevelType = GetNextLevelType(currentLevelType);
+    
+    // Телепортируем игрока в безопасное место на время генерации
+    if (playerTransform != null)
+        playerTransform.position = new Vector3(-100, -100, 0);
+    
+    StartCoroutine(MapGenerateCoroutine());
 		}
 
 		///<summary>
@@ -155,11 +212,10 @@ namespace DungeonGenerator
 		
         private void Start()
         {
+			if (SEED == 0) SEED = Random.Range(int.MinValue, int.MaxValue);
+			if (!isVisualizeProgress)roomSpawnTerm = 0;
 			Debug.Log(LevelCount);
-			if (!isVisualizeProgress){
-				roomSpawnTerm = 0;
-			}
-
+			currentRoomSeed = SEED;
 			ResetVars();
 			StartCoroutine(MapGenerateCoroutine());
         }
@@ -182,51 +238,165 @@ namespace DungeonGenerator
 		
             MapArrNormalization();                              // Normalize Map for auto tiling
             OnMapGenComplete();    
-            SpawnPlayer();
-			SpawnEnd();
-			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
 			
                              // Transfer Map Data for auto tiling
             if (isVisualizeProgress) yield return new WaitForSeconds(1f);
 
             GetComponent<AutoTiling>().TilingMap();
             GetComponent<AutoTiling>().AddCollidersAfterGeneration();
+			UnityEngine.Tilemaps.Tilemap nonoTilemap = GetComponent<AutoTiling>().nonoTilemap;
+			foreach( Vector3Int tileCoord in nonoTilemap.cellBounds.allPositionsWithin.GetEnumerator())
+			{
+				if (GetComponent<AutoTiling>().IsNoNoCoord(tileCoord)) NoNoCoords.Add(nonoTilemap.CellToWorld(tileCoord));
+			}
+			Debug.Log("NoNoCoords count: " + NoNoCoords.Count.ToString());
+
+			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
+
+			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
             ClearObjects();
 
             Time.timeScale = 1.0f;
             
         }
 
-         private void SpawnPlayer()
-        {
-            if (playerPrefab != null)
-            {
-                PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
+		private void GenerateRoomContent(RoomDescription room)
+		{
+			RoomType roomType = room.Type;
+			switch (roomType)
+			{
+				case RoomType.Start:
+					SpawnPlayer();
+					break;
+				case RoomType.End:
+					SpawnEnd();
+					break;
+				default:
+					SpawnGeneric(room);
+					break;
+			}
+				
 
-                CameraController cameraController = Camera.main.GetComponent<CameraController>();
-        if (cameraController != null)
-        {
-            cameraController.SetPlayerTarget(PlayerObject.transform);
-        }
-                Debug.Log($"Player spawned at: {StartPosition}");
-            }
-            else
-            {
-                Debug.LogError("Player prefab is not assigned in MapGenerator!");
-            }
-        }
+		}
+		private void SpawnGeneric(RoomDescription room)
+		{
+			(float left_fix, float right_fix) = (-room.Size.x/2, room.Size.x/2);
+			(float top_fix, float bottom_fix) = (-room.Size.y/2, room.Size.y/2);
+
+			float[,] bounds = new float[2,2];
+			bounds[0,0] = room.Position.x + left_fix;
+			bounds[0,1] = room.Position.x + right_fix;
+			bounds[1,0] = room.Position.y + top_fix;
+			bounds[1,1] = room.Position.y + bottom_fix;
+			(float left_bound_enemy, float right_bound_enemy) = (bounds[0,0] + enemyCentreDelimiter, bounds[0,1] - enemyCentreDelimiter);
+			(float top_bound_enemy, float bottom_bound_enemy) = (bounds[1,0] + enemyCentreDelimiter, bounds[1,1] - enemyCentreDelimiter);
+
+			float coordinate_x = (right_bound_enemy - left_bound_enemy) * Random.value + left_bound_enemy;
+			float coordinate_y = (bottom_bound_enemy - top_bound_enemy) * Random.value + top_bound_enemy;
+			Instantiate(enemyPrefab, new Vector2(coordinate_x, coordinate_y), Quaternion.identity);
+
+			int randomWall = (int)Random.Range(0,3);
+
+			bounds[0,0] += chestBorderFix;
+			bounds[0,1] -= chestBorderFix;
+			bounds[1,0] += chestBorderFix;
+			bounds[1,1] -= chestBorderFix;
+
+			bool isNoNoBound(Bounds bounds)
+			{
+				foreach (Vector3 coord in NoNoCoords)
+					if (bounds.Contains(coord)) 
+						return true;
+				return false;
+			}
+
+			float chestX = 0;
+			float chestY = 0;
+			Vector3Int positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(new Vector3Int((int)chestX, (int)chestY, 0));
+			GameObject chest = null;
+			Bounds chestBounds;
+			int counter = 0;
+			do 
+			{
+				if (chest)
+				{
+					Destroy(chest);
+					Random.InitState(currentRoomSeed++);
+				}
+
+
+			switch (randomWall) {
+				case 0:
+					chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
+					chestY = bounds[1,0];
+					break;
+				case 1:
+					chestX = bounds[0,1];
+					chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+					break;
+				case 2:
+					chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
+					chestY = bounds[1,1];
+					break;
+				case 3:
+					chestX = bounds[0,0];
+					chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+					break;
+			}
+
+			chest = Instantiate(chestPrefab, new Vector2(chestX, chestY+1), Quaternion.identity);
+			chestBounds = chest.GetComponent<BoxCollider2D>().bounds;
+			BoxCollider2D checkCollider =  chest.AddComponent<BoxCollider2D>();
+			float boundSideY = chestBounds.size.y;
+			// HACK: '4' is to be replaced with variable
+			chestBounds.Expand(boundSideY*4 - boundSideY);
+			chest.transform.position.Set(chest.transform.position.x, chest.transform.position.y + boundSideY/2, 0);
+			
+
+			Vector3 chestCoords = new Vector3(chestX, chestY, 0);
+
+			positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(chestCoords);
+			Debug.Log("positionInTilemap: "+ positionInTilemap.ToString());
+			Debug.Log("positionGlobal: "+ chestCoords.ToString());
+			Debug.Log("isNoNoBound: " +  isNoNoBound(chestBounds).ToString());
+			counter ++;
+			} while (isNoNoBound(chestBounds));
+			
+		}
+
+
+         private void SpawnPlayer()
+		 {
+			 if (playerPrefab != null)
+			 {
+				 PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
+
+				 CameraController cameraController = Camera.main.GetComponent<CameraController>();
+				 if (cameraController != null)
+				 {
+					 cameraController.SetPlayerTarget(PlayerObject.transform);
+				 }
+				 Debug.Log($"Player spawned at: {StartPosition}");
+			 }
+			 else
+			 {
+				 Debug.LogError("Player prefab is not assigned in MapGenerator!");
+			 }
+		 }
 		private void SpawnEnd()
         {
             if (endPrefab != null)
             {
                 EndObject = Instantiate(endPrefab, EndPosition, Quaternion.identity);
-                Debug.Log($"End spawned at: {EndPosition}");
             }
             else
             {
                 Debug.LogError("End prefab is not assigned in MapGenerator!");
             }
         }
+
+
+
 		private void TurnOnRoomGravity(GameObject room)
 		{
 			room.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
@@ -285,7 +455,7 @@ namespace DungeonGenerator
 			// Randomly spawn rooms
 			for (int i = 0; i < selectRoomCnt; i++)
 			{
-				Random.InitState(SEED + i);
+				Random.InitState(currentRoomSeed ++);
 
 				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(minRoomSize, maxRoomSize), isExplodeOnRuntime);
 				rooms.Add(newRoom);
@@ -293,7 +463,7 @@ namespace DungeonGenerator
 			}
 			for (int i = 0; i < generateRoomCnt - selectRoomCnt; i++)
 			{
-				Random.InitState(SEED + i);
+				Random.InitState(currentRoomSeed ++);
 
 				GameObject newRoom = InstatiateNewRoom(gridPrefab, SpawnFunction, new Vector2Int(smallMinRoomSize, smallMaxRoomSize), isExplodeOnRuntime);
 				rooms.Add(newRoom);
@@ -316,12 +486,14 @@ namespace DungeonGenerator
 
             return new Vector3(size.x * rad * Mathf.Cos(theta), size.y * rad * Mathf.Sin(theta));
         }
+
         private Vector3 GetRandomPointInRect(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
             return new Vector3(width, height, 0);
         }
+
         private Vector3 GetRandomPointInCross(Vector2Int size)
         {
 			bool isVertical = Random.value < 0.5f;
@@ -330,18 +502,21 @@ namespace DungeonGenerator
 			if (isVertical) return new Vector3(0, height, 0);
 			return new Vector3(width, 0, 0);
         }
+
         private Vector3 GetRandomPointInLineV(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
 			return new Vector3(0, height, 0);
         }
+
         private Vector3 GetRandomPointInLineH(Vector2Int size)
         {
             float width = Random.Range(-size.x, size.x);
             float height = Random.Range(-size.y, size.y);
 			return new Vector3(width, 0, 0);
         }
+
         private Vector3 GetRandomScale(int minS, int maxS)
         {
             int x = Random.Range(minS, maxS) * 2;
@@ -384,34 +559,41 @@ namespace DungeonGenerator
 
             // Select Rooms ( Except narrow room )
             int count = 0;
-            selectedRooms = new List<(int, Vector2)>();
             foreach (var roomInfo in sortedRooms)
             {
                 if (count >= roomCount) break;
                 GameObject room = rooms[roomInfo.index];
                 room.GetComponent<SpriteRenderer>().color = roomColor;
                 room.SetActive(true);
+				RoomDescription roomDescription = new RoomDescription(roomInfo.index, new Vector2(room.transform.localScale.x, room.transform.localScale.y), RoomType.Generic, room.transform.position);
+				indexToRoomDescription.Add(roomDescription.ID, roomDescription);
 
                 vertices.Add(new Delaunay.Vertex((int)room.transform.position.x, (int)room.transform.position.y));
-                selectedRooms.Add((roomInfo.index, new Vector2((int)room.transform.position.x, (int)room.transform.position.y)));
+				selectedRoomsDescriptions.Add(roomDescription);
                 count++;
             }
 
-            //selectedRooms.Sort((a, b) => b.size.CompareTo(a.size));
-            if (selectedRooms.Count > 1)
+            if (selectedRoomsDescriptions.Count > 1)
             {
-				Debug.Log("Selected {selectedRooms.Count} rooms");
-				//(int index, ) startRoom = selectedRooms[Random.Range(0,selectedRooms.Count)];
-				int startRoomIndex = selectedRooms[Random.Range(0,selectedRooms.Count)].index;	
-				int endRoomIndex;
+				Debug.Log("Selected {selectedRoomsDescriptions.Count} rooms");
+
+				int randomRoomIndex = Random.Range(0,selectedRoomsDescriptions.Count);
+				RoomDescription startRoom = selectedRoomsDescriptions[randomRoomIndex];
+				startRoom.Type = RoomType.Start;
+				selectedRoomsDescriptions[randomRoomIndex] = startRoom;
+				int startRoomID = startRoom.ID;
+
+				int endRoomID; RoomDescription endRoom;
 				do {
-					// endRoom = selectedRooms[Random.Range(0,selectedRooms.Count)];			
-					endRoomIndex = selectedRooms[Random.Range(0,selectedRooms.Count)].index;
-	
-				} while (endRoomIndex == startRoomIndex);
+					randomRoomIndex = Random.Range(0,selectedRoomsDescriptions.Count);
+					endRoom = selectedRoomsDescriptions[randomRoomIndex];
+					endRoomID = endRoom.ID;
+				} while (endRoomID== startRoomID);
+				endRoom.Type = RoomType.End;
+				selectedRoomsDescriptions[randomRoomIndex] = endRoom;
 			
-				StartPosition = rooms[startRoomIndex].transform.position;
-				EndPosition = rooms[endRoomIndex].transform.position;
+				StartPosition = rooms[startRoomID].transform.position;
+				EndPosition = rooms[endRoomID].transform.position;
             }
 			else Debug.Log("Too few rooms!");
 
@@ -457,8 +639,10 @@ namespace DungeonGenerator
         }
         private void MainRoomFraming()
         {
-            foreach (var (index, pos) in selectedRooms)
+            foreach (var roomDescription in selectedRoomsDescriptions)
             {
+				int index = roomDescription.ID;
+				Vector2Int size = new Vector2Int((int)roomDescription.Size.x, (int)roomDescription.Size.y);
                 int selectedId = index;
 
                 rooms[selectedId].GetComponent<SpriteRenderer>().color = roomColor;
@@ -803,7 +987,23 @@ namespace DungeonGenerator
         private void OnMapGenComplete()
         {
             if (GetComponent<AutoTiling>() != null)
-                GetComponent<AutoTiling>().SetMapInfos(ref map);
+
+			{
+				int rowLength = map.GetLength(0);
+				int colLength = map.GetLength(1);
+
+				for (int i = 0; i < rowLength; i++)
+				{
+					string printRow = "";
+					for (int j = 0; j < colLength; j++)
+					{
+						printRow += string.Format("{0} ", map[i, j]);
+						if ((j+1) %4 == 0) printRow += '\t';
+					}
+					// Debug.Log(printRow);
+				}
+				GetComponent<AutoTiling>().SetMapInfos(ref map);
+			}
 
             if (isVisualizeProgress)
             {

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: -1634898820456887293}
   - component: {fileID: 6741499530746824504}
   - component: {fileID: 108445789125990139}
+  - component: {fileID: 6298640179699945705}
   m_Layer: 0
   m_Name: playerPrefab
   m_TagString: Untagged
@@ -214,7 +215,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dfc3bafd66c9774783309e53404f999, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isFull: 0000
-  slots:
-  - {fileID: 0}
-  - {fileID: 0}
+  image: {fileID: 0}
+  countText: {fileID: 0}
+  item: {fileID: 0}
+  count: 1
+  parentAfterDrag: {fileID: 0}
+--- !u!114 &6298640179699945705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5277003762197705392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 097b3171b1050da4d9de9e5513c38a96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 3
+  currentHealth: 3
+  heartImages:
+  - {fileID: 3897388851076465696, guid: 58d9a214395af164fbd7d8d930cac7ff, type: 3}
+  - {fileID: 3897388851076465696, guid: 0579841c1f8c36a448bb9e735a4427ab, type: 3}
+  - {fileID: 3897388851076465696, guid: b5477f57cb2b6964caf8d7c9a6ca6e1c, type: 3}
+  fullHeart: {fileID: -2844531463381759980, guid: 1f4a4cb415bbaa24aa8ff6107bb2e1fd, type: 3}
+  emptyHeart: {fileID: -5034061168752090764, guid: d0aa78e8246e64e4386130f992c172b9, type: 3}
+  increaseHealthButton: {fileID: 6450151982752362932, guid: 5352c58b233b97340919a40092110a42, type: 3}
+  decreaseHealthButton: {fileID: 8276404175127949805, guid: 5591cbe14a15f974984ff3e49f0bbad9, type: 3}

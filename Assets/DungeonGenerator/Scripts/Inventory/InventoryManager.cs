@@ -5,6 +5,7 @@ public class InventoryManager : MonoBehaviour
     public int maxStackedItems = 10;
     public InventorySlot[] inventorySlots;
     public GameObject inventoryItemPrefab;
+    public GameObject worldItemPrefab;
     int selectedSlot = -1;
 
     private void Start() {
@@ -51,7 +52,24 @@ public class InventoryManager : MonoBehaviour
         }
         return false;
     }
+public void DropItem(InventorySlot slot)
+{
+    InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+    if (itemInSlot != null)
+    {
+        Debug.Log("DropItem called");
 
+        Vector3 dropPosition = transform.position + transform.forward * 1.5f;
+
+        GameObject worldItem = Instantiate(worldItemPrefab, dropPosition, Quaternion.identity);
+
+        WorldItem worldItemComponent = worldItem.GetComponent<WorldItem>();
+        worldItemComponent.item = itemInSlot.item;
+        worldItemComponent.amount = itemInSlot.count;
+
+        Destroy(itemInSlot.gameObject); // Удаляем из UI
+    }
+}
     void SpawnNewItem(Item item, InventorySlot slot) {
         GameObject newItemGo = Instantiate(inventoryItemPrefab, slot.transform);
         InventoryItem inventoryItem = newItemGo.GetComponent<InventoryItem>();
