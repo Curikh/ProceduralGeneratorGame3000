@@ -364,7 +364,8 @@ private void Reset()
 			Debug.Log("isNoNoBound: " +  isNoNoBound(chestBounds).ToString());
 			counter ++;
 			} while (isNoNoBound(chestBounds) && counter < 100);
-			ObjectsToClear.Add(chest);
+			if (counter >= 100) Destroy(chest);
+			else ObjectsToClear.Add(chest);
 			
 		}
 
