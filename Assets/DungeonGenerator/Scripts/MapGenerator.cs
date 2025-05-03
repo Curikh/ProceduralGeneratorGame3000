@@ -326,44 +326,43 @@ namespace DungeonGenerator
 					Destroy(chest);
 					Random.InitState(currentRoomSeed++);
 				}
+				switch (randomWall) {
+					case 0:
+						chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
+						chestY = bounds[1,0];
+						break;
+					case 1:
+						chestX = bounds[0,1];
+						chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+						break;
+					case 2:
+						chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
+						chestY = bounds[1,1];
+						break;
+					case 3:
+						chestX = bounds[0,0];
+						chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+						break;
+				}
+
+				chest = Instantiate(chestPrefab, new Vector2(chestX, chestY+1), Quaternion.identity);
+				chestBounds = chest.GetComponent<BoxCollider2D>().bounds;
+				BoxCollider2D checkCollider =  chest.AddComponent<BoxCollider2D>();
+				float boundSideY = chestBounds.size.y;
+				// HACK: '4' is to be replaced with variable
+				chestBounds.Expand(boundSideY*4 - boundSideY);
+				chest.transform.position.Set(chest.transform.position.x, chest.transform.position.y + boundSideY/2, 0);
 
 
-			switch (randomWall) {
-				case 0:
-					chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
-					chestY = bounds[1,0];
-					break;
-				case 1:
-					chestX = bounds[0,1];
-					chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
-					break;
-				case 2:
-					chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
-					chestY = bounds[1,1];
-					break;
-				case 3:
-					chestX = bounds[0,0];
-					chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
-					break;
-			}
+				Vector3 chestCoords = new Vector3(chestX, chestY, 0);
 
-			chest = Instantiate(chestPrefab, new Vector2(chestX, chestY+1), Quaternion.identity);
-			chestBounds = chest.GetComponent<BoxCollider2D>().bounds;
-			BoxCollider2D checkCollider =  chest.AddComponent<BoxCollider2D>();
-			float boundSideY = chestBounds.size.y;
-			// HACK: '4' is to be replaced with variable
-			chestBounds.Expand(boundSideY*4 - boundSideY);
-			chest.transform.position.Set(chest.transform.position.x, chest.transform.position.y + boundSideY/2, 0);
-			
-
-			Vector3 chestCoords = new Vector3(chestX, chestY, 0);
-
-			positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(chestCoords);
-			Debug.Log("positionInTilemap: "+ positionInTilemap.ToString());
-			Debug.Log("positionGlobal: "+ chestCoords.ToString());
-			Debug.Log("isNoNoBound: " +  isNoNoBound(chestBounds).ToString());
-			counter ++;
+				positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(chestCoords);
+				Debug.Log("positionInTilemap: "+ positionInTilemap.ToString());
+				Debug.Log("positionGlobal: "+ chestCoords.ToString());
+				Debug.Log("isNoNoBound: " +  isNoNoBound(chestBounds).ToString());
+				counter ++;
 			} while (isNoNoBound(chestBounds) && counter < 100);
+
 			if (counter >= 100) Destroy(chest);
 			else ObjectsToClear.Add(chest);
 			
