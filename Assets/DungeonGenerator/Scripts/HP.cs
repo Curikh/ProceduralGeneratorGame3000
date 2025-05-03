@@ -16,10 +16,13 @@ public class PlayerHealth : MonoBehaviour
     public Button increaseHealthButton;
     public Button decreaseHealthButton;
 
-    private void Start()
+    public bool isDead;
+
+    public void Start()
     {
-        currentHealth = maxHealth;
-        UpdateHearts();
+         currentHealth = maxHealth;
+         isDead = false;
+         UpdateHearts();
 
         // Настройка кнопок отладки
         if (increaseHealthButton != null)
@@ -64,6 +67,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
+        isDead = true;
         Debug.Log("Player died!");
         // Здесь можно добавить логику смерти
     }

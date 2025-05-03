@@ -4,6 +4,7 @@ public class InventoryManager : MonoBehaviour
 {
     public int maxStackedItems = 10;
     public InventorySlot[] inventorySlots;
+    public PlayerHealth playerHealth;
     public GameObject inventoryItemPrefab;
     public GameObject worldItemPrefab;
     int selectedSlot = -1;
@@ -18,6 +19,11 @@ public class InventoryManager : MonoBehaviour
                 ChangeSelectedSlot(number-1);
             }
         }
+        if (Input.GetKeyDown(KeyCode.E)) {
+        UseSelectedItem();
+        }
+        
+
     }
     void ChangeSelectedSlot(int newValue) {
         if (selectedSlot >= 0) {
@@ -27,6 +33,34 @@ public class InventoryManager : MonoBehaviour
         inventorySlots[newValue].Select(); // Выделяем новый слот
         selectedSlot = newValue;
     }
+
+    void UseSelectedItem()
+{
+    if (selectedSlot < 0 || selectedSlot >= inventorySlots.Length) return;
+
+    InventorySlot slot = inventorySlots[selectedSlot];
+    InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+    if (itemInSlot == null) return;
+
+    if (itemInSlot.item.name == "HealingPoition")
+    {
+        if (playerHealth != null && playerHealth.currentHealth < playerHealth.maxHealth)
+        {
+            playerHealth.IncreaseHealth();
+
+            itemInSlot.count--;
+            if (itemInSlot.count <= 0)
+            {
+                Destroy(itemInSlot.gameObject);
+            }
+            else
+            {
+                itemInSlot.RefreshCount();
+            }
+        }
+    }
+}
+
 
     public bool AddItem(Item item) {
         // Проверка на стекирование
@@ -75,4 +109,5 @@ public void DropItem(InventorySlot slot)
         InventoryItem inventoryItem = newItemGo.GetComponent<InventoryItem>();
         inventoryItem.InitialiseItem(item);
     }
+    
 }
