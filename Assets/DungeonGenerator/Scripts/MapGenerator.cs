@@ -242,6 +242,7 @@ namespace DungeonGenerator
 			{
 				if (GetComponent<AutoTiling>().IsNoNoCoord(tileCoord)) NoNoCoords.Add(nonoTilemap.CellToWorld(tileCoord));
 			}
+			Debug.Log("NoNoCoords count: " + NoNoCoords.Count.ToString());
 
 			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
 
@@ -299,17 +300,23 @@ namespace DungeonGenerator
 				foreach (Vector3 coord in NoNoCoords)
 					if (bounds.Contains(coord)) 
 						return true;
-
 				return false;
-
 			}
+
 			float chestX = 0;
 			float chestY = 0;
 			Vector3Int positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(new Vector3Int((int)chestX, (int)chestY, 0));
 			GameObject chest = null;
 			Bounds chestBounds;
 			int counter = 0;
-				if (chest) Destroy(chest);
+			do 
+			{
+				if (chest)
+				{
+					Destroy(chest);
+					Random.InitState(currentRoomSeed++);
+				}
+
 
 			switch (randomWall) {
 				case 0:
@@ -330,14 +337,27 @@ namespace DungeonGenerator
 					break;
 			}
 
-			chest = Instantiate(chestPrefab, new Vector2(chestX, chestY), Quaternion.identity);
+			chest = Instantiate(chestPrefab, new Vector2(chestX, chestY+1), Quaternion.identity);
 			chestBounds = chest.GetComponent<BoxCollider2D>().bounds;
+			BoxCollider2D checkCollider =  chest.AddComponent<BoxCollider2D>();
+			float boundSideY = chestBounds.size.y;
+			// HACK: '4' is to be replaced with variable
+			chestBounds.Expand(boundSideY*4 - boundSideY);
+			chest.transform.position.Set(chest.transform.position.x, chest.transform.position.y + boundSideY/2, 0);
+			
 
-			positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(new Vector3Int((int)chestX, (int)chestY, 0));
+			Vector3 chestCoords = new Vector3(chestX, chestY, 0);
+
+			positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(chestCoords);
 			Debug.Log("positionInTilemap: "+ positionInTilemap.ToString());
-			Debug.Log("positionGlobal: "+ chestX.ToString() + " " + chestY.ToString());
-			counter += 1;
+			Debug.Log("positionGlobal: "+ chestCoords.ToString());
+			Debug.Log("isNoNoBound: " +  isNoNoBound(chestBounds).ToString());
+			counter ++;
+			} while (isNoNoBound(chestBounds));
+			
 		}
+
+
          private void SpawnPlayer()
 		 {
 			 if (playerPrefab != null)
