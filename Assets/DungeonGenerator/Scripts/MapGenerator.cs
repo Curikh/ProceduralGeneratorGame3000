@@ -183,20 +183,20 @@ namespace DungeonGenerator
 		///<summary>
 		///	clear objects and tilesets, to prepare for new level generation
 		///</summary>
-private void Reset()
-{
-    LevelCount++;
-    currentRoomSeed += LevelCount;
-    ClearAll();
-    GetComponent<AutoTiling>().ClearTiles();
-    ResetVars();
-    currentLevelType = GetNextLevelType(currentLevelType);
-    
-    // Телепортируем игрока в безопасное место на время генерации
-    if (playerTransform != null)
-        playerTransform.position = new Vector3(-100, -100, 0);
-    
-    StartCoroutine(MapGenerateCoroutine());
+		private void Reset()
+		{
+			LevelCount++;
+			currentRoomSeed += LevelCount;
+			ClearAll();
+			GetComponent<AutoTiling>().ClearTiles();
+			ResetVars();
+			currentLevelType = GetNextLevelType(currentLevelType);
+
+			// Телепортируем игрока в безопасное место на время генерации
+			if (playerTransform != null)
+				playerTransform.position = new Vector3(-100, -100, 0);
+
+			StartCoroutine(MapGenerateCoroutine());
 		}
 
 		///<summary>
