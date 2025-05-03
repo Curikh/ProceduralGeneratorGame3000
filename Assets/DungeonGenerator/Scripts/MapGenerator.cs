@@ -369,27 +369,24 @@ namespace DungeonGenerator
 		}
 
 
-         private void SpawnPlayer()
-		 {
-			 if (playerPrefab != null)
-			 {
-				 PlayerObject = Instantiate(playerPrefab, StartPosition, Quaternion.identity);
-				 ObjectsToClear.Add(PlayerObject);
-				 
-				 
+		private void SpawnPlayer(){
+			if (playerTransform != null)
+			{
+				playerTransform.position = StartPosition;
+				Debug.Log($"Player teleported to: {StartPosition}");
 
-				 CameraController cameraController = Camera.main.GetComponent<CameraController>();
-				 if (cameraController != null)
-				 {
-					 cameraController.SetPlayerTarget(PlayerObject.transform);
-				 }
-				 Debug.Log($"Player spawned at: {StartPosition}");
-			 }
-			 else
-			 {
-				 Debug.LogError("Player prefab is not assigned in MapGenerator!");
-			 }
-		 }
+				// Обновление камеры
+				CameraController cameraController = Camera.main.GetComponent<CameraController>();
+				if (cameraController != null)
+				{
+					cameraController.SetPlayerTarget(playerTransform);
+				}
+			}
+			else
+			{
+				Debug.LogError("Player transform is not assigned in MapGenerator!");
+			}
+         }
 		private void SpawnEnd()
         {
             if (endPrefab != null)
