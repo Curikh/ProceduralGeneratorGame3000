@@ -88,6 +88,12 @@ namespace DungeonGenerator
         [SerializeField, Range(1, 9)] private int smoothLevel;  // 9 : Disable smooth
 		[SerializeField] private bool isExplodeOnRuntime;
 
+		[Header("Room Generate Variables")]
+		[SerializeField] private float chestBorderFix;
+		[SerializeField] private float enemyCentreDelimiter;
+		[SerializeField] public int tightPassageRadius;
+
+
 
         [Header("Visualize Generating Progress")]
         [SerializeField] private bool isVisualizeProgress;      // On/Off
@@ -133,6 +139,9 @@ namespace DungeonGenerator
 		private LevelType currentLevelType = LevelType.Start;
 
 
+		private List<Vector3> NoNoCoords;
+
+
 		private LevelType GetNextLevelType(LevelType inputLevelType){
 			switch (inputLevelType){
 
@@ -156,6 +165,7 @@ namespace DungeonGenerator
 			selectedRoomsDescriptions = new List<RoomDescription>();
 			indexToRoomDescription = new NativeHashMap<int, RoomDescription>(selectRoomCnt, Allocator.Persistent);
 			gridsList = new List<GameObject>();
+			NoNoCoords = new List<Vector3>();
 			minX = int.MaxValue;
 			minY = int.MaxValue;
 			maxX = int.MinValue;
@@ -221,15 +231,21 @@ namespace DungeonGenerator
 		
             MapArrNormalization();                              // Normalize Map for auto tiling
             OnMapGenComplete();    
-			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
-
-			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
 			
                              // Transfer Map Data for auto tiling
             if (isVisualizeProgress) yield return new WaitForSeconds(1f);
 
             GetComponent<AutoTiling>().TilingMap();
             GetComponent<AutoTiling>().AddCollidersAfterGeneration();
+			UnityEngine.Tilemaps.Tilemap nonoTilemap = GetComponent<AutoTiling>().nonoTilemap;
+			foreach( Vector3Int tileCoord in nonoTilemap.cellBounds.allPositionsWithin.GetEnumerator())
+			{
+				if (GetComponent<AutoTiling>().IsNoNoCoord(tileCoord)) NoNoCoords.Add(nonoTilemap.CellToWorld(tileCoord));
+			}
+
+			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
+
+			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
             ClearObjects();
 
             Time.timeScale = 1.0f;
@@ -238,7 +254,6 @@ namespace DungeonGenerator
 
 		private void GenerateRoomContent(RoomDescription room)
 		{
-			Debug.Log("Room " + room.Type);
 			RoomType roomType = room.Type;
 			switch (roomType)
 			{
@@ -265,19 +280,63 @@ namespace DungeonGenerator
 			bounds[0,1] = room.Position.x + right_fix;
 			bounds[1,0] = room.Position.y + top_fix;
 			bounds[1,1] = room.Position.y + bottom_fix;
+			(float left_bound_enemy, float right_bound_enemy) = (bounds[0,0] + enemyCentreDelimiter, bounds[0,1] - enemyCentreDelimiter);
+			(float top_bound_enemy, float bottom_bound_enemy) = (bounds[1,0] + enemyCentreDelimiter, bounds[1,1] - enemyCentreDelimiter);
 
-			Random.InitState(currentRoomSeed++);
-			float coordinate_x = (bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];
-			float coordinate_y = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+			float coordinate_x = (right_bound_enemy - left_bound_enemy) * Random.value + left_bound_enemy;
+			float coordinate_y = (bottom_bound_enemy - top_bound_enemy) * Random.value + top_bound_enemy;
 			Instantiate(enemyPrefab, new Vector2(coordinate_x, coordinate_y), Quaternion.identity);
 
-			Random.InitState(currentRoomSeed++);
-			coordinate_x = (bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];
-			coordinate_y = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
-			Instantiate(chestPrefab, new Vector2(coordinate_x, coordinate_y), Quaternion.identity);
-			
+			int randomWall = (int)Random.Range(0,3);
 
+			bounds[0,0] += chestBorderFix;
+			bounds[0,1] -= chestBorderFix;
+			bounds[1,0] += chestBorderFix;
+			bounds[1,1] -= chestBorderFix;
 
+			bool isNoNoBound(Bounds bounds)
+			{
+				foreach (Vector3 coord in NoNoCoords)
+					if (bounds.Contains(coord)) 
+						return true;
+
+				return false;
+
+			}
+			float chestX = 0;
+			float chestY = 0;
+			Vector3Int positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(new Vector3Int((int)chestX, (int)chestY, 0));
+			GameObject chest = null;
+			Bounds chestBounds;
+			int counter = 0;
+				if (chest) Destroy(chest);
+
+			switch (randomWall) {
+				case 0:
+					chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
+					chestY = bounds[1,0];
+					break;
+				case 1:
+					chestX = bounds[0,1];
+					chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+					break;
+				case 2:
+					chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
+					chestY = bounds[1,1];
+					break;
+				case 3:
+					chestX = bounds[0,0];
+					chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+					break;
+			}
+
+			chest = Instantiate(chestPrefab, new Vector2(chestX, chestY), Quaternion.identity);
+			chestBounds = chest.GetComponent<BoxCollider2D>().bounds;
+
+			positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(new Vector3Int((int)chestX, (int)chestY, 0));
+			Debug.Log("positionInTilemap: "+ positionInTilemap.ToString());
+			Debug.Log("positionGlobal: "+ chestX.ToString() + " " + chestY.ToString());
+			counter += 1;
 		}
          private void SpawnPlayer()
 		 {
