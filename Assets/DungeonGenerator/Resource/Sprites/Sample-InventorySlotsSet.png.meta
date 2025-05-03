@@ -1122,7 +1122,47 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Sample-InventorySlotsSet_0: 7057425618129708846
+      Sample-InventorySlotsSet_1: -1618881721444307328
+      Sample-InventorySlotsSet_10: 5488608052169940263
+      Sample-InventorySlotsSet_11: 2064022732399069771
+      Sample-InventorySlotsSet_12: 8814145676656599574
+      Sample-InventorySlotsSet_13: 5030957265650616317
+      Sample-InventorySlotsSet_14: 6140433826521694318
+      Sample-InventorySlotsSet_15: 7607912299176120888
+      Sample-InventorySlotsSet_16: -4996945614273292217
+      Sample-InventorySlotsSet_17: -7807624585779951471
+      Sample-InventorySlotsSet_18: -8104783145122104587
+      Sample-InventorySlotsSet_19: -3058345341091813488
+      Sample-InventorySlotsSet_2: 2676542137609899856
+      Sample-InventorySlotsSet_20: 2548867940667996443
+      Sample-InventorySlotsSet_21: 7302594134542003029
+      Sample-InventorySlotsSet_22: -8511608942421125656
+      Sample-InventorySlotsSet_23: -4708282112046482191
+      Sample-InventorySlotsSet_24: -4935968244887302480
+      Sample-InventorySlotsSet_25: 9030240080543481551
+      Sample-InventorySlotsSet_26: -6031609210774620124
+      Sample-InventorySlotsSet_27: -4514256447628012594
+      Sample-InventorySlotsSet_28: -4348924884258866145
+      Sample-InventorySlotsSet_29: -4173851519869416775
+      Sample-InventorySlotsSet_3: -1779631998068120339
+      Sample-InventorySlotsSet_30: 6509183565680621287
+      Sample-InventorySlotsSet_31: -3017078309508199376
+      Sample-InventorySlotsSet_32: -8067241834544158006
+      Sample-InventorySlotsSet_33: 1221611207677401986
+      Sample-InventorySlotsSet_34: 4228012213405603750
+      Sample-InventorySlotsSet_35: -6164675085045070001
+      Sample-InventorySlotsSet_36: -7670952442580773914
+      Sample-InventorySlotsSet_37: 5996951642020835570
+      Sample-InventorySlotsSet_38: 4910351668878758118
+      Sample-InventorySlotsSet_39: 1145736415326457093
+      Sample-InventorySlotsSet_4: -3825283363393094444
+      Sample-InventorySlotsSet_5: -7764393099029896080
+      Sample-InventorySlotsSet_6: 4335954605292507747
+      Sample-InventorySlotsSet_7: -4149702031842356186
+      Sample-InventorySlotsSet_8: -3102353448190278811
+      Sample-InventorySlotsSet_9: -1392853809761806452
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

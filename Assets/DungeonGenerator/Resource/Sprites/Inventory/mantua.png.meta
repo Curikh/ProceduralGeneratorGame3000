@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      mantua_0: 8896560099451619751
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

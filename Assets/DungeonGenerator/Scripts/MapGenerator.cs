@@ -104,6 +104,9 @@ namespace DungeonGenerator
         [SerializeField] private float lineWidth;               // Width of all lines
         [SerializeField] private float lineDrawTerm;            // Time between creating and deleting a LineRenderer.
 
+        [Header("Player Reference")]
+        [SerializeField] private Transform playerTransform;
+
         [Header("Objects Spawn")]
         [SerializeField] private GameObject playerPrefab;
 		[SerializeField] private GameObject endPrefab;
@@ -178,16 +181,20 @@ namespace DungeonGenerator
 		///<summary>
 		///	clear objects and tilesets, to prepare for new level generation
 		///</summary>
-		private void Reset(){
-			LevelCount ++;
-			currentRoomSeed += LevelCount;
-			ClearAll();
-            GetComponent<AutoTiling>().ClearTiles();
-			ResetVars();
-			currentLevelType = GetNextLevelType(currentLevelType);
-			randomSpawnType = (RandomSpawnType)Random.Range(0, System.Enum.GetValues(typeof(RandomSpawnType)).Length);
-			Debug.Log(LevelCount);
-			StartCoroutine(MapGenerateCoroutine());
+private void Reset()
+{
+    LevelCount++;
+    currentRoomSeed += LevelCount;
+    ClearAll();
+    GetComponent<AutoTiling>().ClearTiles();
+    ResetVars();
+    currentLevelType = GetNextLevelType(currentLevelType);
+    
+    // Телепортируем игрока в безопасное место на время генерации
+    if (playerTransform != null)
+        playerTransform.position = new Vector3(-100, -100, 0);
+    
+    StartCoroutine(MapGenerateCoroutine());
 		}
 
 		///<summary>
@@ -381,7 +388,6 @@ namespace DungeonGenerator
             if (endPrefab != null)
             {
                 EndObject = Instantiate(endPrefab, EndPosition, Quaternion.identity);
-                Debug.Log($"End spawned at: {EndPosition}");
             }
             else
             {
@@ -582,7 +588,7 @@ namespace DungeonGenerator
 					randomRoomIndex = Random.Range(0,selectedRoomsDescriptions.Count);
 					endRoom = selectedRoomsDescriptions[randomRoomIndex];
 					endRoomID = endRoom.ID;
-				} while (endRoomID == startRoomID);
+				} while (endRoomID== startRoomID);
 				endRoom.Type = RoomType.End;
 				selectedRoomsDescriptions[randomRoomIndex] = endRoom;
 			
