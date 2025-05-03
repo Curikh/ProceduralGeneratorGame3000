@@ -102,7 +102,10 @@ namespace DungeonGenerator
 
         int[] dirX = { 1, 0, -1, 1, 0, -1, 1, 0, -1 };
         int[] dirY = { -1, -1, -1, 0, 0, 0, 1, 1, 1 };
-		public void ClearTiles(){
+
+
+		public void ClearTiles()
+		{
 			floorTilemap.ClearAllTiles();
 			wallTilemap.ClearAllTiles();
 			wallTopTilemap.ClearAllTiles();
@@ -226,6 +229,7 @@ namespace DungeonGenerator
         AddColliderToTilemap(wallTopTilemap);
     }
 
+
     // Вспомогательный метод для настройки коллайдеров
        private void AddColliderToTilemap(Tilemap tilemap)
     {
@@ -296,6 +300,7 @@ namespace DungeonGenerator
                         }
                     }
                     break;
+
                 default:
                     break;
             }
@@ -336,12 +341,13 @@ namespace DungeonGenerator
         {
             Vector3Int tilePos = new Vector3Int(x, y, 0);
 
-            if ((wallTilemap.GetTile(tilePos) == wall_Top ||
-                wallTilemap.GetTile(tilePos) == wall_Bottom_Right ||
-                wallTilemap.GetTile(tilePos) == wall_Bottom_Left ||
-                wallTilemap.GetTile(tilePos) == wall_Top_Center) && map[y, x] == (int)GridType.None)
+			TileBase tile = wallTilemap.GetTile(tilePos);
+            if ((tile == wall_Top ||
+                tile == wall_Bottom_Right ||
+                tile == wall_Bottom_Left ||
+                tile == wall_Top_Center) && map[y, x] == (int)GridType.None)
             {
-                wallTopTilemap.SetTile(tilePos, wallTilemap.GetTile(tilePos));
+                wallTopTilemap.SetTile(tilePos, tile);
                 wallTilemap.SetTile(tilePos, null);
             }
         }
@@ -389,6 +395,7 @@ namespace DungeonGenerator
         {
             return (pattern & mask) == match;
         }
+
         int CalculatePattern(int x, int y)
         {
             int pattern = 0;
