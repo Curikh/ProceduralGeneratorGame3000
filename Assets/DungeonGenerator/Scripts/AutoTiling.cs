@@ -12,6 +12,7 @@ namespace DungeonGenerator
         [SerializeField] private Tilemap wallTopTilemap;
         [SerializeField] private Tilemap cliffTilemap;
         [SerializeField] private Tilemap shadowTilemap;
+        [SerializeField] public Tilemap nonoTilemap;
 
         [Header("Tiles")]
         [SerializeField] private Tile wall_Top_Left;
@@ -28,7 +29,7 @@ namespace DungeonGenerator
         [SerializeField] private Tile wall_Center_Right;
         [SerializeField] private Tile wall_Center_Left;
         [SerializeField] private Tile floor;
-        [SerializeField] private Tile cliff_0;
+        [SerializeField] public Tile cliff_0;
         [SerializeField] private Tile cliff_1;
         [SerializeField] private Tile wall_T;
 
@@ -109,6 +110,16 @@ namespace DungeonGenerator
 			shadowTilemap.ClearAllTiles();
 		}
 
+		public bool IsNoNoCoord(Vector3Int coords)
+		{
+			return nonoTilemap.GetTile(coords) == cliff_0;
+		}
+
+		public bool IsNoNoTile(TileBase tile)
+		{
+			return tile == cliff_0;
+		}
+
         public void TilingMap()
         {
             // Sequence : Floor-Wall-Exception-Cliff-Shadow
@@ -130,6 +141,58 @@ namespace DungeonGenerator
 
             }
 
+			int width = Mathf.Max(map.GetLength(0), wallTilemap.size.x, wallTopTilemap.size.x);
+			int height = Mathf.Max(map.GetLength(1), wallTilemap.size.y, wallTopTilemap.size.y);
+			Debug.Log("Width: " +  width + "Height: " + height);
+			int tightPassageDetectionRadius = GetComponent<MapGenerator>().tightPassageRadius;
+
+			bool hasEatherWall(Vector3Int coords)
+			{
+				bool hasWallTile = wallTilemap.GetTile(coords) != null;
+				bool hasWallTopTile = wallTopTilemap.GetTile(coords) != null;
+				return hasWallTile || hasWallTopTile;
+			}
+
+            for (int x = width; x >= 0; x--)
+            {
+                for (int y = height; y >= 0; y--)
+                {
+					Vector3Int coords = new (x, y, 0);
+					bool hasFloor = floorTilemap.GetTile(coords) != null;
+					bool hasWall = hasEatherWall(coords);
+					if (!(hasFloor || hasWall)) continue;
+					if (hasFloor && !hasWall) continue;
+					int[] xDim = {0, -1, 1, 0};
+					int[] yDim = {-1, 0, 0, 1};
+					for (int i = 0; i < xDim.GetLength(0); i++)
+					{
+						int newX = x + xDim[i];
+						int newY = y + yDim[i];
+						coords = new (newX, newY, 0);
+						if (hasEatherWall(coords))
+						{
+							xDim[i] = 0;
+							yDim[i] = 0;
+						}
+					}
+
+					for (int n = 1; n < tightPassageDetectionRadius; n++){
+						for (int i = 0; i < xDim.GetLength(0); i++)
+						{
+							if (xDim[i] == yDim[i]) continue;
+							int newX = x + xDim[i] * n;
+							int newY = y + yDim[i] * n;
+							coords = new (newX, newY, 0);
+							// Vector3Int coords_1 = new (newX, newY+1, 0);
+							Tile tileToPlace = cliff_1;
+							if (nonoTilemap.GetTile(coords) != null) tileToPlace = cliff_0;
+							nonoTilemap.SetTile(coords, tileToPlace);
+							// nonoTilemap.SetTile(coords_1, tileToPlace);
+						}
+					}
+
+				}
+			}
             // Process Exception Tiles
             for (int i = map.GetLength(0) - 1; i >= 0; i--)
             {
