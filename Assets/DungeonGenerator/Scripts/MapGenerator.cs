@@ -189,6 +189,7 @@ namespace DungeonGenerator
 			currentRoomSeed += LevelCount;
 			ClearAll();
 			GetComponent<AutoTiling>().ClearTiles();
+			indexToRoomDescription.Dispose();
 			ResetVars();
 			currentLevelType = GetNextLevelType(currentLevelType);
 
@@ -357,9 +358,6 @@ namespace DungeonGenerator
 				Vector3 chestCoords = new Vector3(chestX, chestY, 0);
 
 				positionInTilemap = GetComponent<AutoTiling>().nonoTilemap.WorldToCell(chestCoords);
-				Debug.Log("positionInTilemap: "+ positionInTilemap.ToString());
-				Debug.Log("positionGlobal: "+ chestCoords.ToString());
-				Debug.Log("isNoNoBound: " +  isNoNoBound(chestBounds).ToString());
 				counter ++;
 			} while (isNoNoBound(chestBounds) && counter < 100);
 
@@ -1005,7 +1003,6 @@ namespace DungeonGenerator
 						printRow += string.Format("{0} ", map[i, j]);
 						if ((j+1) %4 == 0) printRow += '\t';
 					}
-					// Debug.Log(printRow);
 				}
 				GetComponent<AutoTiling>().SetMapInfos(ref map);
 			}
