@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 91a1b110fc7410d418843e36eecf54b8
+guid: 071f02333fe1b4c4d9cfe11e13f464da
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2902698247344732673
-    second: cookies_0
+      213: 94597975672011937
+    second: Key 15 - GOLD - frame0038_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cookies_0
+      name: Key 15 - GOLD - frame0038_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 3
         y: 0
-        width: 16
-        height: 16
+        width: 12
+        height: 29
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ff54edcb25b87b7d0800000000000000
-      internalID: -2902698247344732673
+      spriteID: 1acb6609b54105100800000000000000
+      internalID: 94597975672011937
       vertices: []
       indices: 
       edges: []
@@ -147,8 +147,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      cookies_0: -2902698247344732673
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

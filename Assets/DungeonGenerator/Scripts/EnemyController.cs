@@ -1,11 +1,13 @@
 using UnityEngine;
-
+using System.Collections;
 public class EnemyController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 3f;
     public float stoppingDistance = 0.5f;
     public float returnSpeedMultiplier = 1.5f; // Быстрее возвращается на базу
+    public float attackCooldown = 1f; // Задержка между атаками в секундах
+    private float lastAttackTime;
     
     [Header("Detection Zone")]
     public float detectionRadius = 5f;
@@ -63,6 +65,11 @@ public class EnemyController : MonoBehaviour
         {
             Vector2 direction = (player.position - transform.position).normalized;
             transform.position += (Vector3)direction * moveSpeed * Time.deltaTime;
+        }
+            else if (Time.time >= lastAttackTime + attackCooldown)
+        {
+        Debug.Log($"Получил урон (атака с задержкой)");
+        lastAttackTime = Time.time; // Сбрасываем таймер
         }
     }
 
