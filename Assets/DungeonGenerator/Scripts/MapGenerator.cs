@@ -163,6 +163,7 @@ namespace DungeonGenerator
 
 		
 		private void ResetVars() {
+			Debug.Log("Level: " + LevelCount.ToString());
 			rooms = new List<GameObject>();
 			vertices = new HashSet<Delaunay.Vertex>();
 			lineRenderers = new List<GameObject>();
@@ -204,7 +205,6 @@ namespace DungeonGenerator
 		///	Destroy all objects on scene
 		///</summary>
 		private void ClearAll(){ 
-			Debug.Log("reached");
 			ClearObjects();
 			foreach (GameObject _object in ObjectsToClear) Destroy(_object);
 
@@ -218,7 +218,6 @@ namespace DungeonGenerator
         {
 			if (SEED == 0) SEED = Random.Range(int.MinValue, int.MaxValue);
 			if (!isVisualizeProgress)roomSpawnTerm = 0;
-			Debug.Log(LevelCount);
 			currentRoomSeed = SEED;
 			ResetVars();
 			StartCoroutine(MapGenerateCoroutine());
@@ -253,7 +252,6 @@ namespace DungeonGenerator
 			{
 				if (GetComponent<AutoTiling>().IsNoNoCoord(tileCoord)) NoNoCoords.Add(nonoTilemap.CellToWorld(tileCoord));
 			}
-			Debug.Log("NoNoCoords count: " + NoNoCoords.Count.ToString());
 
 			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
 			foreach (GameObject _object in ObjectsToClear)
@@ -600,7 +598,6 @@ namespace DungeonGenerator
 
             if (selectedRoomsDescriptions.Count > 1)
             {
-				Debug.Log("Selected {selectedRoomsDescriptions.Count} rooms");
 
 				int randomRoomIndex = Random.Range(0,selectedRoomsDescriptions.Count);
 				RoomDescription startRoom = selectedRoomsDescriptions[randomRoomIndex];
@@ -620,7 +617,7 @@ namespace DungeonGenerator
 				StartPosition = rooms[startRoomID].transform.position;
 				EndPosition = rooms[endRoomID].transform.position;
             }
-			else Debug.Log("Too few rooms!");
+			else Debug.LogError("Too few rooms!");
 
         }
 

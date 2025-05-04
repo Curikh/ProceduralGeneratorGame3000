@@ -148,7 +148,6 @@ namespace DungeonGenerator
 
 			int width = Mathf.Max(map.GetLength(0), wallTilemap.size.x, wallTopTilemap.size.x);
 			int height = Mathf.Max(map.GetLength(1), wallTilemap.size.y, wallTopTilemap.size.y);
-			Debug.Log("Width: " +  width + "Height: " + height);
 			int tightPassageDetectionRadius = GetComponent<MapGenerator>().tightPassageRadius;
 
 			bool hasEatherWall(Vector3Int coords)
