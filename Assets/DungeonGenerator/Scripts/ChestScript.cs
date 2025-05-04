@@ -15,7 +15,7 @@ public class ChestScript : MonoBehaviour
 	[SerializeField] private float ItemsGenerationSpread;
 
 	public UnityEvent on_click_event = new UnityEvent();
-	public UnityEvent chestOpened = new UnityEvent();
+	public UnityEvent<List<GameObject>> chestOpened = new UnityEvent<List<GameObject>>();
 
 	public enum DropDirection
 	{
@@ -79,6 +79,7 @@ public class ChestScript : MonoBehaviour
 
 	public void OpenChest()
 	{
+		List<GameObject> spawnedObjects = new List<GameObject>();
 		int additionalStackableItemRange = Mathf.Abs(StackableItemsToGenerateMax - StackableItemsToGenerateMin);
 		foreach(GameObject loot in ChosenLoot)
 		{
@@ -93,6 +94,7 @@ public class ChestScript : MonoBehaviour
 				spawnedObjects.Add(newLoot);
 			}
 		}
+		chestOpened.Invoke(spawnedObjects);
 
 		Destroy(this.gameObject);
 	}
@@ -102,7 +104,6 @@ public class ChestScript : MonoBehaviour
 		if (!IsBeingOpened) return;
 		IsBeingOpened = false;
 		if (keyCount <= 0) return;
-		chestOpened.Invoke();
 		OpenChest();
 
 	}

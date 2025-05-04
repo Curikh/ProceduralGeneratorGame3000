@@ -263,7 +263,7 @@ namespace DungeonGenerator
 				PlayerKeys playerKeys = PlayerObject.GetComponent<PlayerKeys>();
 				chestScript.on_click_event.AddListener(playerKeys.ScreamKeyCount);
 				playerKeys.KeyCountScream.AddListener(chestScript.ReadKeyCount);
-				chestScript.chestOpened.AddListener(playerKeys.RemoveKey);
+				chestScript.chestOpened.AddListener(HandleChestOpening);
 				
 			}
 
@@ -273,6 +273,12 @@ namespace DungeonGenerator
             Time.timeScale = 1.0f;
             
         }
+		private void HandleChestOpening(List<GameObject> lootList)
+		{
+			foreach (GameObject loot in lootList) ObjectsToClear.Add(loot);
+			PlayerObject.GetComponent<PlayerKeys>().RemoveKey();
+		}
+
 
 		private void GenerateRoomContent(RoomDescription room)
 		{
