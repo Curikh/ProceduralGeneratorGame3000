@@ -73,26 +73,31 @@ public class ChestScript : MonoBehaviour
     void Start()
     {
 		int additionalItemsCount = Random.Range(0, ItemsToGenerateMax-ItemsToGenerateMin);
+		int additionalStackableItemRange = Mathf.Abs(StackableItemsToGenerateMax - StackableItemsToGenerateMin);
 		for (int i = 0; i < (ItemsToGenerateMin + additionalItemsCount); i++) 
-				ChosenLoot.Add(LootToChooseFrom[Random.Range(0, LootToChooseFrom.Length)]);
-    }
+		{
+			GameObject lootToSpawn = LootToChooseFrom[Random.Range(0, LootToChooseFrom.Length)];
+			if (lootToSpawn.GetComponent<WorldItem>().item.stackable)
+			{
+				int amountToSpawn = StackableItemsToGenerateMin + Random.Range(0, additionalStackableItemRange);
+				for (int j = 0; j < amountToSpawn ; j++)
+				{
+					ChosenLoot.Add(lootToSpawn);
+				}
+			}
+			else ChosenLoot.Add(lootToSpawn);
+		}
+	}
 
 	public void OpenChest()
 	{
 		List<GameObject> spawnedObjects = new List<GameObject>();
-		int additionalStackableItemRange = Mathf.Abs(StackableItemsToGenerateMax - StackableItemsToGenerateMin);
 		foreach(GameObject loot in ChosenLoot)
 		{
-			bool isLootStackable = loot.GetComponent<WorldItem>().item.stackable;
-			int amountToSpawn = 1;
-			if (isLootStackable) amountToSpawn = StackableItemsToGenerateMin + Random.Range(0, additionalStackableItemRange);
-			for (int i = 0; i < amountToSpawn ; i++)
-			{
-				GameObject newLoot = Instantiate(loot, this.transform.position, Quaternion.identity);
-				Vector3 newPosition = GenerateSpread(newLoot.transform.position);
-				newLoot.transform.position = newPosition;
-				spawnedObjects.Add(newLoot);
-			}
+			GameObject newLoot = Instantiate(loot, this.transform.position, Quaternion.identity);
+			Vector3 newPosition = GenerateSpread(newLoot.transform.position);
+			newLoot.transform.position = newPosition;
+			spawnedObjects.Add(newLoot);
 		}
 		chestOpened.Invoke(spawnedObjects);
 
