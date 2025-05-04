@@ -3620,7 +3620,7 @@ MonoBehaviour:
   playerTransform: {fileID: 1286648631}
   playerPrefab: {fileID: 5277003762197705392, guid: 3416f5d9f9dba0248a940e8f9deb80fa, type: 3}
   endPrefab: {fileID: 4211977806339980488, guid: 26d8c5e26263cf74a99af07f151baa5f, type: 3}
-  enemyPrefab: {fileID: 4211977806339980488, guid: e36ff58fcfc52f301899eca3572cd0fa, type: 3}
+  enemyPrefab: {fileID: 4661560614119546095, guid: 98104d303378dc644930e7a5dac5610f, type: 3}
   chestPrefab: {fileID: 2309330174264617988, guid: 2984bd28dc118554197d2e933404e327, type: 3}
 --- !u!114 &1911126344
 MonoBehaviour:

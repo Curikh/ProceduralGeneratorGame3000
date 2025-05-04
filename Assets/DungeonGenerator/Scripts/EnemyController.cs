@@ -5,35 +5,44 @@ public class EnemyController : MonoBehaviour
     [Header("Movement Settings")]
     public float moveSpeed = 3f;
     public float stoppingDistance = 0.5f;
+    public float returnSpeedMultiplier = 1.5f; // Быстрее возвращается на базу
     
     [Header("Detection Zone")]
     public float detectionRadius = 5f;
-    public Transform detectionZone;
+    public bool showGizmos = true;
+    
+    [Header("Anchor System")]
+    [Tooltip("Точка, к которой возвращается противник")]
+    public Vector2 anchorPosition;
+    public bool useTransformAsAnchor = true; // Использовать текущую позицию как якорь
     
     private Transform player;
-    private Vector3 homePosition;
     private bool isChasing = false;
+    private CircleCollider2D detectionCollider;
 
     private void Awake()
     {
-        homePosition = transform.position;
         InitializeDetectionZone();
+        if (useTransformAsAnchor)
+        {
+            anchorPosition = transform.position;
+        }
     }
 
     private void InitializeDetectionZone()
     {
-        if (detectionZone == null)
+        detectionCollider = GetComponentInChildren<CircleCollider2D>();
+        if (detectionCollider == null)
         {
             GameObject zone = new GameObject("DetectionZone");
             zone.transform.SetParent(transform);
             zone.transform.localPosition = Vector3.zero;
             
-            var collider = zone.AddComponent<CircleCollider2D>();
-            collider.isTrigger = true;
-            collider.radius = detectionRadius;
-            
-            detectionZone = zone.transform;
+            detectionCollider = zone.AddComponent<CircleCollider2D>();
+            detectionCollider.isTrigger = true;
         }
+        
+        detectionCollider.radius = detectionRadius;
     }
 
     private void Update()
@@ -44,7 +53,7 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            ReturnHome();
+            ReturnToAnchor();
         }
     }
 
@@ -57,13 +66,28 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    private void ReturnHome()
+    private void ReturnToAnchor()
     {
-        if (Vector2.Distance(transform.position, homePosition) > 0.1f)
+        if (Vector2.Distance(transform.position, anchorPosition) > 0.1f)
         {
-            Vector2 direction = (homePosition - transform.position).normalized;
-            transform.position += (Vector3)direction * moveSpeed * Time.deltaTime;
+            Vector2 direction = (anchorPosition - (Vector2)transform.position).normalized;
+            float speed = moveSpeed * returnSpeedMultiplier; // Быстрее возвращается
+            transform.position += (Vector3)direction * speed * Time.deltaTime;
         }
+    }
+
+    // Метод для изменения якорной позиции
+    public void SetNewAnchorPosition(Vector2 newPosition)
+    {
+        anchorPosition = newPosition;
+        Debug.Log($"Новые координаты якоря: {anchorPosition}");
+    }
+
+    // Метод для сброса на текущую позицию
+    public void ResetAnchorToCurrentPosition()
+    {
+        anchorPosition = transform.position;
+        Debug.Log($"Якорь сброшен на текущую позицию: {anchorPosition}");
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -83,10 +107,17 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    // Для визуализации в редакторе
     private void OnDrawGizmosSelected()
     {
+        if (!showGizmos) return;
+        
+        // Визуализация зоны обнаружения
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
+        
+        // Визуализация якорной точки
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawSphere(useTransformAsAnchor ? transform.position : anchorPosition, 0.2f);
+        Gizmos.DrawLine(transform.position, useTransformAsAnchor ? transform.position : anchorPosition);
     }
 }

@@ -148,12 +148,12 @@ SpriteRenderer:
   m_SortingLayerID: 1633279629
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1944039849201686545, guid: c6b1f3d1bbcc748418e27bf560fa979a, type: 3}
+  m_Sprite: {fileID: -1903240744945611512, guid: 9e6f68e6105c6524bb4dad618fae165c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.14, y: 0.16}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -166,7 +166,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4661560614119546095}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -193,17 +193,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.000000044703484, y: -0.025724392}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.14, y: 0.18}
-    newSize: {x: 1, y: 1}
+    newSize: {x: 0.14, y: 0.16}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.14, y: 0.18}
+  m_Size: {x: 0.12150812, y: 0.102664076}
   m_EdgeRadius: 0
 --- !u!50 &1207655226726467650
 Rigidbody2D:
@@ -213,14 +213,14 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4661560614119546095}
-  m_BodyType: 1
+  m_BodyType: 0
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
+  m_Mass: 4
+  m_LinearDamping: 10
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -231,7 +231,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &5739388193468862389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,7 +247,7 @@ MonoBehaviour:
   moveSpeed: 3
   stoppingDistance: 0.5
   returnSpeedMultiplier: 1.5
-  detectionRadius: 5
+  detectionRadius: 7
   showGizmos: 1
   anchorPosition: {x: -0.07, y: -0.01}
   useTransformAsAnchor: 1
