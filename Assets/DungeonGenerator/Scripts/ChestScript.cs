@@ -15,6 +15,7 @@ public class ChestScript : MonoBehaviour
 	[SerializeField] private float ItemsGenerationSpread;
 
 	public UnityEvent on_click_event = new UnityEvent();
+	public UnityEvent chestOpened = new UnityEvent();
 
 	public enum DropDirection
 	{
@@ -27,6 +28,8 @@ public class ChestScript : MonoBehaviour
 	public DropDirection dropDirection = DropDirection.Up;
 
 	private List<GameObject> ChosenLoot = new List<GameObject>();
+
+	private bool IsBeingOpened = false;
 
 
 	private Vector3 GenerateSpread(Vector3 originalPos)
@@ -56,6 +59,7 @@ public class ChestScript : MonoBehaviour
 				newSpreadY = originalPos.y - ItemsGenerationSpread + Random.value * ItemsGenerationSpread;
 				newSpread = new Vector3(newSpreadX, newSpreadY, originalPos.z);
 				break;
+				
 
 
 		}
@@ -73,7 +77,7 @@ public class ChestScript : MonoBehaviour
 				ChosenLoot.Add(LootToChooseFrom[Random.Range(0, LootToChooseFrom.Length)]);
     }
 
-	void OnMouseDown()
+	public void OpenChest()
 	{
 		int additionalStackableItemRange = Mathf.Abs(StackableItemsToGenerateMax - StackableItemsToGenerateMin);
 		foreach(GameObject loot in ChosenLoot)
@@ -85,12 +89,28 @@ public class ChestScript : MonoBehaviour
 			for (int i = 0; i < amountToSpawn ; i++)
 			{
 				Vector3 newPosition = GenerateSpread(newLoot.transform.position);
-				Debug.Log(newPosition.ToString());
 				newLoot.transform.position = newPosition;
 			}
 		}
 
 		Destroy(this.gameObject);
+	}
+
+	public void ReadKeyCount(int keyCount)
+	{
+		if (!IsBeingOpened) return;
+		IsBeingOpened = false;
+		if (keyCount <= 0) return;
+		chestOpened.Invoke();
+		OpenChest();
+
+	}
+
+
+	void OnMouseDown()
+	{
+		on_click_event.Invoke();
+		IsBeingOpened = true;
 	}
 
 }

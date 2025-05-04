@@ -106,6 +106,7 @@ namespace DungeonGenerator
 
         [Header("Player Reference")]
         [SerializeField] private Transform playerTransform;
+		[SerializeField] private GameObject PlayerObject;
 
         [Header("Objects Spawn")]
         [SerializeField] private GameObject playerPrefab;
@@ -132,7 +133,6 @@ namespace DungeonGenerator
         public Vector2 StartPosition { get; private set; }
 		public Vector2 EndPosition { get; private set; }
 
-		private GameObject PlayerObject;
 		private GameObject EndObject;
 		private List<GameObject> ObjectsToClear;
 
@@ -256,6 +256,16 @@ namespace DungeonGenerator
 			Debug.Log("NoNoCoords count: " + NoNoCoords.Count.ToString());
 
 			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
+			foreach (GameObject _object in ObjectsToClear)
+			{
+				ChestScript chestScript  = _object.GetComponent<ChestScript>();
+				if (!chestScript) continue;
+				PlayerKeys playerKeys = PlayerObject.GetComponent<PlayerKeys>();
+				chestScript.on_click_event.AddListener(playerKeys.ScreamKeyCount);
+				playerKeys.KeyCountScream.AddListener(chestScript.ReadKeyCount);
+				chestScript.chestOpened.AddListener(playerKeys.RemoveKey);
+				
+			}
 
 			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
             ClearObjects();
