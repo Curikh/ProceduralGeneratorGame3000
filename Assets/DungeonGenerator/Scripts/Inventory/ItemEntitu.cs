@@ -38,6 +38,19 @@ namespace Inventory
 
 					Destroy(gameObject); // удаляем монету из мира
 				}
+					else if (item.type == ItemType.Key)
+				{
+					PlayerKeys playerKeys = other.GetComponent<PlayerKeys>();
+					if (playerKeys != null)
+					{
+						for (int i = 0; i < amount; i++)
+						{
+							playerKeys.AddKey();
+						}
+					}
+
+					Destroy(gameObject); // удаляем монету из мира
+				}
 				else
 				{
 					InventoryManager inventory = other.GetComponent<InventoryManager>();

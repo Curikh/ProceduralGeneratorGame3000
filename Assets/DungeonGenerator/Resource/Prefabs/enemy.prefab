@@ -245,7 +245,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3
-  stoppingDistance: 0.5
+  stoppingDistance: 1.5
   returnSpeedMultiplier: 1.5
   detectionRadius: 7
   showGizmos: 1
