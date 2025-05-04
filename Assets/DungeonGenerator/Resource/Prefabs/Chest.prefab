@@ -153,6 +153,11 @@ MonoBehaviour:
   - {fileID: 2154745804732005595, guid: 5837381f146980b4f97ca76feba085ec, type: 3}
   - {fileID: 2154745804732005595, guid: e0e253266cb8fe04f90b8ff603dfa58b, type: 3}
   - {fileID: 2154745804732005595, guid: 4fe84f3d217c19b478f2c85a9cf7ec62, type: 3}
+  ItemsToGenerateMin: 1
+  ItemsToGenerateMax: 1
+  StackableItemsToGenerateMin: 1
+  StackableItemsToGenerateMax: 3
+  ItemsGenerationSpread: 1.5
   on_click_event:
     m_PersistentCalls:
       m_Calls: []
