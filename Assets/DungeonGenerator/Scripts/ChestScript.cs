@@ -82,14 +82,15 @@ public class ChestScript : MonoBehaviour
 		int additionalStackableItemRange = Mathf.Abs(StackableItemsToGenerateMax - StackableItemsToGenerateMin);
 		foreach(GameObject loot in ChosenLoot)
 		{
-			GameObject newLoot = Instantiate(loot, this.transform.position, Quaternion.identity);
-			bool isLootStackable = newLoot.GetComponent<WorldItem>().item.stackable;
+			bool isLootStackable = loot.GetComponent<WorldItem>().item.stackable;
 			int amountToSpawn = 1;
 			if (isLootStackable) amountToSpawn = StackableItemsToGenerateMin + Random.Range(0, additionalStackableItemRange);
 			for (int i = 0; i < amountToSpawn ; i++)
 			{
+				GameObject newLoot = Instantiate(loot, this.transform.position, Quaternion.identity);
 				Vector3 newPosition = GenerateSpread(newLoot.transform.position);
 				newLoot.transform.position = newPosition;
+				spawnedObjects.Add(newLoot);
 			}
 		}
 
