@@ -23,7 +23,8 @@ namespace Inventory
 	public enum ItemType {
 		Poition,
 		Weapon,
-		Coin
+		Coin,
+		Key
 	}
 	public enum ActionType {
 		Use,
