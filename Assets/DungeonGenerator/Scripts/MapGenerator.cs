@@ -216,6 +216,7 @@ namespace DungeonGenerator
 
         private void Start()
         {
+			if (Globals.Instance) SEED = Globals.Instance.Seed;
 			if (SEED == 0) SEED = Random.Range(int.MinValue, int.MaxValue);
 			if (!isVisualizeProgress)roomSpawnTerm = 0;
 			currentRoomSeed = SEED;
