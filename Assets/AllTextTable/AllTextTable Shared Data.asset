@@ -27,6 +27,16 @@ MonoBehaviour:
     m_Key: ExitGame
     m_Metadata:
       m_Items: []
+  - m_Id: 22665416417280
+    m_Key: 'Continue
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24746151911424
+    m_Key: ToMainMenu
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
