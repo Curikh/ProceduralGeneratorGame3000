@@ -23,4 +23,10 @@ public class MainMenuCanvas : MonoBehaviour
 		Globals.Instance.Seed = seed;
 		SceneManager.LoadScene("DemoScene", LoadSceneMode.Single);
 	}
+
+	public void ExitGame()
+	{
+		Debug.Log("Quitting...");
+		Application.Quit();
+	}
 }

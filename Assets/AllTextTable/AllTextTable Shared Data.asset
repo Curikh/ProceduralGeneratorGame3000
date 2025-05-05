@@ -23,6 +23,10 @@ MonoBehaviour:
     m_Key: EnterSeed
     m_Metadata:
       m_Items: []
+  - m_Id: 15641646526464
+    m_Key: ExitGame
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
