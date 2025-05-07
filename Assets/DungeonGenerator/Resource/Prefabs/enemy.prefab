@@ -247,7 +247,16 @@ MonoBehaviour:
   moveSpeed: 3
   stoppingDistance: 1.5
   returnSpeedMultiplier: 1.5
+  attackCooldown: 1
   detectionRadius: 7
   showGizmos: 1
   anchorPosition: {x: -0.07, y: -0.01}
   useTransformAsAnchor: 1
+  maxHealth: 3
+  attackDamage: 1
+  attackRange: 0.5
+  itemDrops:
+  - {fileID: 7595965750670295219, guid: bcf035fbd1ded5d4ba2d562d7be484e9, type: 3}
+  - {fileID: 2154745804732005595, guid: fc28bcc7cf3446340a9ce96f05612bb3, type: 3}
+  dropChance: 0.5
+  dropForce: 3

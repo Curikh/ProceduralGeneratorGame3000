@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic; //  Нужен для List<>
 
 public class EnemyController : MonoBehaviour
 {
@@ -22,9 +23,19 @@ public class EnemyController : MonoBehaviour
     public int maxHealth = 3;
     private int currentHealth;
 
+    [Header("Attack Settings")]
+    public int attackDamage = 1;
+    public float attackRange = 0.5f;
+
+    [Header("Drop Settings")]
+    public GameObject[] itemDrops; //  Массив префабов предметов для дропа
+    [Range(0f, 1f)] public float dropChance = 0.5f; //  Шанс выпадения предмета (от 0 до 1)
+    public float dropForce = 3f; //  Сила, с которой предметы разбрасываются
+
     private Transform player;
     private bool isChasing = false;
     private CircleCollider2D detectionCollider;
+    private PlayerHealth playerHealth;
 
     private void Awake()
     {
@@ -66,6 +77,8 @@ public class EnemyController : MonoBehaviour
 
     private void ChasePlayer()
     {
+        if (player == null) return;
+
         if (Vector2.Distance(transform.position, player.position) > stoppingDistance)
         {
             Vector2 direction = (player.position - transform.position).normalized;
@@ -73,8 +86,17 @@ public class EnemyController : MonoBehaviour
         }
         else if (Time.time >= lastAttackTime + attackCooldown)
         {
-            //  Здесь можно добавить логику атаки врага на игрока
+            AttackPlayer();
             lastAttackTime = Time.time;
+        }
+    }
+
+    private void AttackPlayer()
+    {
+        if (playerHealth != null)
+        {
+            playerHealth.DecreaseHealth();
+            Debug.Log("Enemy attacked player!");
         }
     }
 
@@ -112,7 +134,30 @@ public class EnemyController : MonoBehaviour
     private void Die()
     {
         Debug.Log("Enemy died!");
+        DropItem(); //  Вызываем метод дропа
         Destroy(gameObject);
+    }
+
+    private void DropItem()
+    {
+        if (itemDrops.Length == 0) return; //  Если массив пустой, выходим
+
+        float randomValue = Random.value; //  Случайное значение от 0 до 1
+
+        if (randomValue <= dropChance)
+        {
+            //  Выбираем случайный предмет из массива
+            int randomIndex = Random.Range(0, itemDrops.Length);
+            GameObject droppedItem = Instantiate(itemDrops[randomIndex], transform.position, Quaternion.identity);
+
+            //  Применяем силу, чтобы разбросать предмет (необязательно)
+            Rigidbody2D rb = droppedItem.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                Vector2 randomDirection = Random.insideUnitCircle.normalized;
+                rb.AddForce(randomDirection * dropForce, ForceMode2D.Impulse);
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -121,6 +166,11 @@ public class EnemyController : MonoBehaviour
         {
             player = other.transform;
             isChasing = true;
+            playerHealth = other.GetComponent<PlayerHealth>();
+            if (playerHealth == null)
+            {
+                Debug.LogError("PlayerHealth component not found on player!");
+            }
         }
     }
 
@@ -129,6 +179,8 @@ public class EnemyController : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isChasing = false;
+            player = null;
+            playerHealth = null;
         }
     }
 
@@ -142,5 +194,8 @@ public class EnemyController : MonoBehaviour
         Gizmos.color = Color.cyan;
         Gizmos.DrawSphere(useTransformAsAnchor ? transform.position : anchorPosition, 0.2f);
         Gizmos.DrawLine(transform.position, useTransformAsAnchor ? transform.position : anchorPosition);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
-} 
+}
