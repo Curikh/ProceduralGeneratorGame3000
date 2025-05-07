@@ -3878,7 +3878,7 @@ Canvas:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1786001565}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_RenderMode: 0
   m_Camera: {fileID: 0}
@@ -4373,7 +4373,7 @@ MonoBehaviour:
   lineWidth: 1
   lineDrawTerm: 0.2
   playerTransform: {fileID: 1286648631}
-  PlayerObject: {fileID: 0}
+  PlayerObject: {fileID: 1286648623}
   playerPrefab: {fileID: 5277003762197705392, guid: 3416f5d9f9dba0248a940e8f9deb80fa, type: 3}
   endPrefab: {fileID: 4211977806339980488, guid: 26d8c5e26263cf74a99af07f151baa5f, type: 3}
   enemyPrefab: {fileID: 4661560614119546095, guid: 98104d303378dc644930e7a5dac5610f, type: 3}
