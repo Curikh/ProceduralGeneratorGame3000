@@ -330,6 +330,7 @@ private void OnDestroy()
 			GameObject chest = null;
 			Bounds chestBounds;
 			int counter = 0;
+			ChestScript.DropDirection dropDirection = ChestScript.DropDirection.Up;
 			do 
 			{
 				if (chest)
@@ -341,22 +342,27 @@ private void OnDestroy()
 					case 0:
 						chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
 						chestY = bounds[1,0];
+						dropDirection = ChestScript.DropDirection.Down;
 						break;
 					case 1:
 						chestX = bounds[0,1];
 						chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+						dropDirection = ChestScript.DropDirection.Left;
 						break;
 					case 2:
 						chestX =(bounds[0,1] - bounds[0,0]) * Random.value + bounds[0,0];			
 						chestY = bounds[1,1];
+						dropDirection = ChestScript.DropDirection.Up;
 						break;
 					case 3:
 						chestX = bounds[0,0];
 						chestY = (bounds[1,1] - bounds[1,0]) * Random.value + bounds[1,0];
+						dropDirection = ChestScript.DropDirection.Right;
 						break;
 				}
 
 				chest = Instantiate(chestPrefab, new Vector2(chestX, chestY+1), Quaternion.identity);
+				chest.GetComponent<ChestScript>().dropDirection = dropDirection;
 				chestBounds = chest.GetComponent<BoxCollider2D>().bounds;
 				BoxCollider2D checkCollider =  chest.AddComponent<BoxCollider2D>();
 				float boundSideY = chestBounds.size.y;

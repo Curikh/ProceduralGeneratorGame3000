@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8248661418135798184}
   - component: {fileID: 551491648343118919}
   - component: {fileID: 5754075194470036917}
+  - component: {fileID: -7463952394287207858}
   m_Layer: 0
   m_Name: Chest
   m_TagString: Untagged
@@ -105,7 +106,7 @@ BoxCollider2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_LayerOverridePriority: 0
+  m_LayerOverridePriority: 1
   m_ForceSendLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -118,7 +119,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -134,3 +135,29 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.17917769, y: 0.1702649}
   m_EdgeRadius: 0
+--- !u!114 &-7463952394287207858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2309330174264617988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6356e0de61a4fac6a17de15abf2860a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LootToChooseFrom:
+  - {fileID: 2154745804732005595, guid: 5e8bd5a851b4d5b47baa0a19635dae67, type: 3}
+  - {fileID: 2154745804732005595, guid: 1613eca5a1bcded45896242e3dcc6a07, type: 3}
+  - {fileID: 2154745804732005595, guid: 5837381f146980b4f97ca76feba085ec, type: 3}
+  - {fileID: 2154745804732005595, guid: e0e253266cb8fe04f90b8ff603dfa58b, type: 3}
+  - {fileID: 2154745804732005595, guid: 4fe84f3d217c19b478f2c85a9cf7ec62, type: 3}
+  ItemsToGenerateMin: 1
+  ItemsToGenerateMax: 1
+  StackableItemsToGenerateMin: 1
+  StackableItemsToGenerateMax: 3
+  ItemsGenerationSpread: 1.5
+  on_click_event:
+    m_PersistentCalls:
+      m_Calls: []
