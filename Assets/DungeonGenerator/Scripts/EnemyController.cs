@@ -1,23 +1,27 @@
 using UnityEngine;
 using System.Collections;
+
 public class EnemyController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 3f;
     public float stoppingDistance = 0.5f;
-    public float returnSpeedMultiplier = 1.5f; // Быстрее возвращается на базу
-    public float attackCooldown = 1f; // Задержка между атаками в секундах
+    public float returnSpeedMultiplier = 1.5f;
+    public float attackCooldown = 1f;
     private float lastAttackTime;
-    
+
     [Header("Detection Zone")]
     public float detectionRadius = 5f;
     public bool showGizmos = true;
-    
+
     [Header("Anchor System")]
-    [Tooltip("Точка, к которой возвращается противник")]
     public Vector2 anchorPosition;
-    public bool useTransformAsAnchor = true; // Использовать текущую позицию как якорь
-    
+    public bool useTransformAsAnchor = true;
+
+    [Header("Health Settings")]
+    public int maxHealth = 3;
+    private int currentHealth;
+
     private Transform player;
     private bool isChasing = false;
     private CircleCollider2D detectionCollider;
@@ -29,6 +33,7 @@ public class EnemyController : MonoBehaviour
         {
             anchorPosition = transform.position;
         }
+        currentHealth = maxHealth;
     }
 
     private void InitializeDetectionZone()
@@ -39,11 +44,11 @@ public class EnemyController : MonoBehaviour
             GameObject zone = new GameObject("DetectionZone");
             zone.transform.SetParent(transform);
             zone.transform.localPosition = Vector3.zero;
-            
+
             detectionCollider = zone.AddComponent<CircleCollider2D>();
             detectionCollider.isTrigger = true;
         }
-        
+
         detectionCollider.radius = detectionRadius;
     }
 
@@ -66,10 +71,10 @@ public class EnemyController : MonoBehaviour
             Vector2 direction = (player.position - transform.position).normalized;
             transform.position += (Vector3)direction * moveSpeed * Time.deltaTime;
         }
-            else if (Time.time >= lastAttackTime + attackCooldown)
+        else if (Time.time >= lastAttackTime + attackCooldown)
         {
-        Debug.Log($"Получил урон (атака с задержкой)");
-        lastAttackTime = Time.time; // Сбрасываем таймер
+            //  Здесь можно добавить логику атаки врага на игрока
+            lastAttackTime = Time.time;
         }
     }
 
@@ -78,23 +83,36 @@ public class EnemyController : MonoBehaviour
         if (Vector2.Distance(transform.position, anchorPosition) > 0.1f)
         {
             Vector2 direction = (anchorPosition - (Vector2)transform.position).normalized;
-            float speed = moveSpeed * returnSpeedMultiplier; // Быстрее возвращается
+            float speed = moveSpeed * returnSpeedMultiplier;
             transform.position += (Vector3)direction * speed * Time.deltaTime;
         }
     }
 
-    // Метод для изменения якорной позиции
     public void SetNewAnchorPosition(Vector2 newPosition)
     {
         anchorPosition = newPosition;
-        Debug.Log($"Новые координаты якоря: {anchorPosition}");
     }
 
-    // Метод для сброса на текущую позицию
     public void ResetAnchorToCurrentPosition()
     {
         anchorPosition = transform.position;
-        Debug.Log($"Якорь сброшен на текущую позицию: {anchorPosition}");
+    }
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+        Debug.Log($"Enemy received {damage} damage. Current health: {currentHealth}");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log("Enemy died!");
+        Destroy(gameObject);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -117,14 +135,12 @@ public class EnemyController : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         if (!showGizmos) return;
-        
-        // Визуализация зоны обнаружения
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
-        
-        // Визуализация якорной точки
+
         Gizmos.color = Color.cyan;
         Gizmos.DrawSphere(useTransformAsAnchor ? transform.position : anchorPosition, 0.2f);
         Gizmos.DrawLine(transform.position, useTransformAsAnchor ? transform.position : anchorPosition);
     }
-}
+} 

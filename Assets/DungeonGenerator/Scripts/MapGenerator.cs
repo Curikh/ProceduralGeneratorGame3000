@@ -161,8 +161,18 @@ namespace DungeonGenerator
 			return LevelType.Red;
 		}
 
+private void OnDestroy()
+{
+    if (indexToRoomDescription.IsCreated)
+        indexToRoomDescription.Dispose();
+}
 		
 		private void ResetVars() {
+            if (indexToRoomDescription.IsCreated)
+        {
+                    indexToRoomDescription.Dispose();
+                indexToRoomDescription = new NativeHashMap<int, RoomDescription>(selectRoomCnt, Allocator.Persistent);
+        }
 			rooms = new List<GameObject>();
 			vertices = new HashSet<Delaunay.Vertex>();
 			lineRenderers = new List<GameObject>();

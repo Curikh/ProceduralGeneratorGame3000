@@ -10,11 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1c5e70df0995864a9d366679f02f004, type: 3}
-  m_Name: Spear
+  m_Name: Sword
   m_EditorClassIdentifier: 
   tile: {fileID: 0}
   type: 1
   actionType: 0
   range: {x: 5, y: 4}
   stackable: 0
-  image: {fileID: 2185596340806550203, guid: f2150b8931dff9b4199943c1aa97545f, type: 3}
+  image: {fileID: -7977354771743948317, guid: 7618def4931f3014f941a28813842f81, type: 3}
+  attackRange: 1.5
+  attackCooldown: 0.5
+  damage: 2

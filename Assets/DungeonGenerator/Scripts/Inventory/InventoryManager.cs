@@ -10,12 +10,14 @@ namespace Inventory
 		public PlayerHealth playerHealth;
 		public GameObject inventoryItemPrefab;
 		public GameObject worldItemPrefab;
-		int selectedSlot = -1;
+		public int selectedSlot = -1;
 
-		private void Start() {
+		private void Start() 
+		{
 			ChangeSelectedSlot(0); // Выбираем первый слот по умолчанию
 		}
-		private void Update(){
+		private void Update()
+		{
 			if (Input.inputString != null) {
 				bool isNumber = int.TryParse(Input.inputString, out int number);
 				if (isNumber && number > 0 && number < 5) {
@@ -65,7 +67,8 @@ namespace Inventory
 		}
 
 
-		public bool AddItem(Item item) {
+		public bool AddItem(Item item) 
+		{
 			// Проверка на стекирование
 			for (int i = 0; i < inventorySlots.Length; i++) {
 				InventorySlot slot = inventorySlots[i];
@@ -107,7 +110,21 @@ namespace Inventory
 				Destroy(itemInSlot.gameObject); // Удаляем из UI
 			}
 		}
-		void SpawnNewItem(Item item, InventorySlot slot) {
+		public Item GetCurrentWeapon()
+		{
+			if (selectedSlot < 0 || selectedSlot >= inventorySlots.Length) return null;
+
+			InventorySlot slot = inventorySlots[selectedSlot];
+			InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+			if (itemInSlot != null && itemInSlot.item.type == ItemType.Weapon)
+			{
+				return itemInSlot.item;
+			}
+
+			return null;
+		}
+		void SpawnNewItem(Item item, InventorySlot slot) 
+		{
 			GameObject newItemGo = Instantiate(inventoryItemPrefab, slot.transform);
 			InventoryItem inventoryItem = newItemGo.GetComponent<InventoryItem>();
 			inventoryItem.InitialiseItem(item);

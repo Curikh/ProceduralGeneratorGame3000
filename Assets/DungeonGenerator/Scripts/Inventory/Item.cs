@@ -18,6 +18,11 @@ namespace Inventory
 		[Header("Both")]
 		public Sprite image;
 
+		[Header("Weapon Settings")]
+		public float attackRange = 1.5f;
+		public float attackCooldown = 0.5f;
+		public int damage = 20;
+
 	}
 
 	public enum ItemType {

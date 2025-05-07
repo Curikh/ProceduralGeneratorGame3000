@@ -50,7 +50,7 @@ namespace Inventory{
 			}
 			else
 			{
-				// 💥 Предмет выбрасывается — находим InventoryManager и вызываем DropItem
+				// Предмет выбрасывается — находим InventoryManager и вызываем DropItem
 				InventorySlot originalSlot = parentAfterDrag.GetComponent<InventorySlot>();
 				InventoryManager inventory = FindObjectOfType<InventoryManager>();
 				inventory.DropItem(originalSlot);
