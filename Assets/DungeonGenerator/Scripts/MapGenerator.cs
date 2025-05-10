@@ -106,6 +106,7 @@ namespace DungeonGenerator
 
         [Header("Player Reference")]
         [SerializeField] private Transform playerTransform;
+		[SerializeField] private GameObject PlayerObject;
 
         [Header("Objects Spawn")]
         [SerializeField] private GameObject playerPrefab;
@@ -132,7 +133,6 @@ namespace DungeonGenerator
         public Vector2 StartPosition { get; private set; }
 		public Vector2 EndPosition { get; private set; }
 
-		private GameObject PlayerObject;
 		private GameObject EndObject;
 		private List<GameObject> ObjectsToClear;
 
@@ -173,6 +173,7 @@ private void OnDestroy()
                     indexToRoomDescription.Dispose();
                 indexToRoomDescription = new NativeHashMap<int, RoomDescription>(selectRoomCnt, Allocator.Persistent);
         }
+			Debug.Log("Level: " + LevelCount.ToString());
 			rooms = new List<GameObject>();
 			vertices = new HashSet<Delaunay.Vertex>();
 			lineRenderers = new List<GameObject>();
@@ -214,7 +215,6 @@ private void OnDestroy()
 		///	Destroy all objects on scene
 		///</summary>
 		private void ClearAll(){ 
-			Debug.Log("reached");
 			ClearObjects();
 			foreach (GameObject _object in ObjectsToClear) Destroy(_object);
 
@@ -226,9 +226,9 @@ private void OnDestroy()
 
         private void Start()
         {
+			if (Globals.Instance) SEED = Globals.Instance.Seed;
 			if (SEED == 0) SEED = Random.Range(int.MinValue, int.MaxValue);
 			if (!isVisualizeProgress)roomSpawnTerm = 0;
-			Debug.Log(LevelCount);
 			currentRoomSeed = SEED;
 			ResetVars();
 			StartCoroutine(MapGenerateCoroutine());
@@ -263,9 +263,18 @@ private void OnDestroy()
 			{
 				if (GetComponent<AutoTiling>().IsNoNoCoord(tileCoord)) NoNoCoords.Add(nonoTilemap.CellToWorld(tileCoord));
 			}
-			Debug.Log("NoNoCoords count: " + NoNoCoords.Count.ToString());
 
 			foreach (RoomDescription room in selectedRoomsDescriptions) GenerateRoomContent(room);
+			foreach (GameObject _object in ObjectsToClear)
+			{
+				ChestScript chestScript  = _object.GetComponent<ChestScript>();
+				if (!chestScript) continue;
+				PlayerKeys playerKeys = PlayerObject.GetComponent<PlayerKeys>();
+				chestScript.on_click_event.AddListener(playerKeys.ScreamKeyCount);
+				playerKeys.KeyCountScream.AddListener(chestScript.ReadKeyCount);
+				chestScript.chestOpened.AddListener(HandleChestOpening);
+				
+			}
 
 			EndObject.GetComponent<EndScript>().event_on_interaction.AddListener(Reset);
             ClearObjects();
@@ -273,6 +282,12 @@ private void OnDestroy()
             Time.timeScale = 1.0f;
             
         }
+		private void HandleChestOpening(List<GameObject> lootList)
+		{
+			foreach (GameObject loot in lootList) ObjectsToClear.Add(loot);
+			PlayerObject.GetComponent<PlayerKeys>().RemoveKey();
+		}
+
 
 		private void GenerateRoomContent(RoomDescription room)
 		{
@@ -594,7 +609,6 @@ private void OnDestroy()
 
             if (selectedRoomsDescriptions.Count > 1)
             {
-				Debug.Log("Selected {selectedRoomsDescriptions.Count} rooms");
 
 				int randomRoomIndex = Random.Range(0,selectedRoomsDescriptions.Count);
 				RoomDescription startRoom = selectedRoomsDescriptions[randomRoomIndex];
@@ -614,7 +628,7 @@ private void OnDestroy()
 				StartPosition = rooms[startRoomID].transform.position;
 				EndPosition = rooms[endRoomID].transform.position;
             }
-			else Debug.Log("Too few rooms!");
+			else Debug.LogError("Too few rooms!");
 
         }
 

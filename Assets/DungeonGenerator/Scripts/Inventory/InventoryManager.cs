@@ -97,7 +97,6 @@ namespace Inventory
 			InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 			if (itemInSlot != null)
 			{
-				Debug.Log("DropItem called");
 
 				Vector3 dropPosition = transform.position + transform.forward * 1.5f;
 

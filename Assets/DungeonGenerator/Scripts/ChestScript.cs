@@ -64,6 +64,7 @@ public class ChestScript : MonoBehaviour
 		playerKeys.RemoveKey();
     }
 
+<<<<<<< HEAD
     private void OpenChest()
     {
         isOpened = true;
@@ -130,3 +131,22 @@ public class ChestScript : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, openRadius);
     }
 }
+=======
+	public void ReadKeyCount(int keyCount)
+	{
+		if (!IsBeingOpened) return;
+		IsBeingOpened = false;
+		if (keyCount <= 0) return;
+		OpenChest();
+
+	}
+
+
+	void OnMouseDown()
+	{
+		on_click_event.Invoke();
+		IsBeingOpened = true;
+	}
+
+}
+>>>>>>> UI

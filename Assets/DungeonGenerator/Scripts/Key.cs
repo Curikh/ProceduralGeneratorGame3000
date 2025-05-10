@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class PlayerKeys : MonoBehaviour
@@ -12,9 +13,11 @@ public class PlayerKeys : MonoBehaviour
     public Button addKeyButton;
     public Button removeKeyButton;
 
+
+	public UnityEvent<int> KeyCountScream = new UnityEvent<int>();
+
     private void Start()
     {
-        currentKeys = 0;
         UpdateKeysDisplay();
 
         // Настройка отладочных кнопок
@@ -50,4 +53,8 @@ public class PlayerKeys : MonoBehaviour
             KeysText.text = currentKeys.ToString();
         }
     }
+	public void ScreamKeyCount()
+	{
+		KeyCountScream.Invoke(currentKeys);
+	}
 }
