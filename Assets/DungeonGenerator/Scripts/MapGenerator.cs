@@ -270,9 +270,6 @@ private void OnDestroy()
 				ChestScript chestScript  = _object.GetComponent<ChestScript>();
 				if (!chestScript) continue;
 				PlayerKeys playerKeys = PlayerObject.GetComponent<PlayerKeys>();
-				chestScript.on_click_event.AddListener(playerKeys.ScreamKeyCount);
-				playerKeys.KeyCountScream.AddListener(chestScript.ReadKeyCount);
-				chestScript.chestOpened.AddListener(HandleChestOpening);
 				
 			}
 
