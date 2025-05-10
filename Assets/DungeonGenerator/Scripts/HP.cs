@@ -15,7 +15,9 @@ public class PlayerHealth : MonoBehaviour
     [Header("Debug")]
     public Button increaseHealthButton;
     public Button decreaseHealthButton;
-
+    private PlayerMovement playerMovement;
+    private Collider2D playerCollider;
+    public Animator animator;
     public bool isDead;
 
     public void Start()
@@ -23,6 +25,9 @@ public class PlayerHealth : MonoBehaviour
          currentHealth = maxHealth;
          isDead = false;
          UpdateHearts();
+
+        playerMovement = GetComponent<PlayerMovement>();
+        playerCollider = GetComponent<Collider2D>();
 
         // Настройка кнопок отладки
         if (increaseHealthButton != null)
@@ -67,8 +72,12 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
+        if (isDead) return;
         isDead = true;
         Debug.Log("Player died!");
+        playerMovement.enabled = false;
+        playerCollider.enabled = false;
+        animator.SetTrigger("Die"); 
         // Здесь можно добавить логику смерти
     }
 }

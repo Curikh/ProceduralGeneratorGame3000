@@ -63,13 +63,17 @@ namespace Inventory
             //  Логика нанесения урона
             Collider2D[] hitColliders = Physics2D.OverlapCircleAll(attackPosition, currentAttackRange);
             foreach (Collider2D hitCollider in hitColliders)
-            {
-                EnemyController enemy = hitCollider.GetComponent<EnemyController>();
-                if (enemy != null)
                 {
-                    enemy.TakeDamage(currentWeapon.damage);
+                    EnemyController enemy = hitCollider.GetComponent<EnemyController>();
+                    if (enemy != null)
+                    {
+                        enemy.TakeDamage(currentWeapon.damage);
+                        
+                        // Добавляем отталкивание
+                        Vector2 knockbackDirection = (hitCollider.transform.position - transform.position).normalized;
+                        enemy.ApplyKnockback(knockbackDirection, currentWeapon.knockbackForce);
+                    }
                 }
-            }
 
             Debug.Log("Атака в направлении: " + attackDirection + " с дальностью: " + currentAttackRange);
             attackCooldownTimer = currentWeapon.attackCooldown;

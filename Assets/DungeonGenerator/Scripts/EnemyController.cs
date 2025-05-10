@@ -32,10 +32,29 @@ public class EnemyController : MonoBehaviour
     [Range(0f, 1f)] public float dropChance = 0.5f; //  Шанс выпадения предмета (от 0 до 1)
     public float dropForce = 3f; //  Сила, с которой предметы разбрасываются
 
+    [Header("Animation Settings")]
+    public Animator animator;
+    public string moveXParam = "MoveX";
+    public string moveYParam = "MoveY";
+    public string isMovingParam = "IsMoving";
+
+    [Header("Damage Effects")]
+    public float hitFlashDuration = 0.2f;
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
+
+    private Vector2 lastMoveDirection;
     private Transform player;
     private bool isChasing = false;
     private CircleCollider2D detectionCollider;
     private PlayerHealth playerHealth;
+
+    [Header("Knockback Settings")]
+public float knockbackResistance = 1f; // 1 = нормальное отталкивание, 0.5 = слабее, 2 = сильнее
+private bool isKnockedBack = false;
+private Vector2 knockbackVelocity;
+private float knockbackDuration = 0.2f;
+private float knockbackTimer = 0f;
 
     private void Awake()
     {
@@ -45,6 +64,8 @@ public class EnemyController : MonoBehaviour
             anchorPosition = transform.position;
         }
         currentHealth = maxHealth;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        originalColor = spriteRenderer.color;
     }
 
     private void InitializeDetectionZone()
@@ -63,8 +84,30 @@ public class EnemyController : MonoBehaviour
         detectionCollider.radius = detectionRadius;
     }
 
+            public void ApplyKnockback(Vector2 direction, float force)
+        {
+            if (isKnockedBack) return;
+            
+            knockbackVelocity = direction * force / knockbackResistance;
+            isKnockedBack = true;
+            knockbackTimer = knockbackDuration;
+        }
+
     private void Update()
+{
+    if (isKnockedBack)
     {
+        knockbackTimer -= Time.deltaTime;
+        transform.position += (Vector3)knockbackVelocity * Time.deltaTime;
+        
+        if (knockbackTimer <= 0)
+        {
+            isKnockedBack = false;
+        }
+    }
+    else
+    {
+        // Обычное поведение
         if (isChasing && player != null)
         {
             ChasePlayer();
@@ -74,14 +117,19 @@ public class EnemyController : MonoBehaviour
             ReturnToAnchor();
         }
     }
+    
+    UpdateAnimation();
+}
 
     private void ChasePlayer()
     {
-        if (player == null) return;
+      if (player == null) return;
+
+        Vector2 direction = (player.position - transform.position).normalized;
+        lastMoveDirection = direction;
 
         if (Vector2.Distance(transform.position, player.position) > stoppingDistance)
         {
-            Vector2 direction = (player.position - transform.position).normalized;
             transform.position += (Vector3)direction * moveSpeed * Time.deltaTime;
         }
         else if (Time.time >= lastAttackTime + attackCooldown)
@@ -90,6 +138,12 @@ public class EnemyController : MonoBehaviour
             lastAttackTime = Time.time;
         }
     }
+    private IEnumerator HitFlashEffect()
+{
+    spriteRenderer.color = Color.red;
+    yield return new WaitForSeconds(hitFlashDuration);
+    spriteRenderer.color = originalColor;
+}
 
     private void AttackPlayer()
     {
@@ -102,9 +156,11 @@ public class EnemyController : MonoBehaviour
 
     private void ReturnToAnchor()
     {
+        Vector2 direction = (anchorPosition - (Vector2)transform.position).normalized;
+        lastMoveDirection = direction;
+
         if (Vector2.Distance(transform.position, anchorPosition) > 0.1f)
         {
-            Vector2 direction = (anchorPosition - (Vector2)transform.position).normalized;
             float speed = moveSpeed * returnSpeedMultiplier;
             transform.position += (Vector3)direction * speed * Time.deltaTime;
         }
@@ -129,6 +185,10 @@ public class EnemyController : MonoBehaviour
         {
             Die();
         }
+        else
+        {
+            StartCoroutine(HitFlashEffect());
+        }
     }
 
     private void Die()
@@ -136,6 +196,22 @@ public class EnemyController : MonoBehaviour
         Debug.Log("Enemy died!");
         DropItem(); //  Вызываем метод дропа
         Destroy(gameObject);
+    }
+
+        private void UpdateAnimation()
+    {
+        if (animator == null) return;
+
+        // Нормализуем направление, чтобы избежать перекоса при диагональном движении
+        Vector2 normalizedDirection = lastMoveDirection.normalized;
+
+        animator.SetFloat(moveXParam, normalizedDirection.x);
+        animator.SetFloat(moveYParam, normalizedDirection.y);
+
+        // Проверяем, движется ли враг (используем для перехода между Idle и Move)
+        bool isMoving = (isChasing && player != null) || 
+                       (Vector2.Distance(transform.position, anchorPosition) > 0.1f);
+        animator.SetBool(isMovingParam, isMoving);
     }
 
     private void DropItem()

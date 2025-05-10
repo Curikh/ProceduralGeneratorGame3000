@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: -1817099233
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2807771345064753467, guid: 4ed558166a089914190c6867402b8402, type: 3}
+  m_Sprite: {fileID: 7147842635118902238, guid: 4ed558166a089914190c6867402b8402, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -158,6 +158,11 @@ MonoBehaviour:
   StackableItemsToGenerateMin: 1
   StackableItemsToGenerateMax: 3
   ItemsGenerationSpread: 1.5
-  on_click_event:
+  openRadius: 2
+  isOpened: 0
+  closedSprite: {fileID: 7147842635118902238, guid: 4ed558166a089914190c6867402b8402, type: 3}
+  openSprite: {fileID: 7495861204804355610, guid: 4ed558166a089914190c6867402b8402, type: 3}
+  onOpenEvent:
     m_PersistentCalls:
       m_Calls: []
+  dropDirection: 0

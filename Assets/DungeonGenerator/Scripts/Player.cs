@@ -11,15 +11,28 @@ public class PlayerMovement : MonoBehaviour
 
     [HideInInspector] public Vector2 movement; // Сделали public
 
-    void Update()
-    {
-        movement.x = Input.GetAxisRaw("Horizontal");
-        movement.y = Input.GetAxisRaw("Vertical");
+    private Vector2 lastMoveDirection= Vector2.down;
 
-        animator.SetFloat("Horizontal", movement.x);
-        animator.SetFloat("Vertical", movement.y);
-        animator.SetFloat("Speed", movement.sqrMagnitude);
+    void Update()
+{
+    movement.x = Input.GetAxisRaw("Horizontal");
+    movement.y = Input.GetAxisRaw("Vertical");
+
+    // Фиксируем последнее направление только при движении
+    if (movement.magnitude > 0.1f)
+    {
+        lastMoveDirection = movement.normalized;
+        animator.SetBool("IsMoving", true);
     }
+    else
+    {
+        animator.SetBool("IsMoving", false);
+    }
+
+    // Всегда передаём последнее направление
+    animator.SetFloat("Horizontal", lastMoveDirection.x);
+    animator.SetFloat("Vertical", lastMoveDirection.y);
+}
 
     void FixedUpdate()
     {

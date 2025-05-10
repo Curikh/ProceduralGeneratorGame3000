@@ -47,5 +47,8 @@ TagManager:
   - name: Player
     uniqueID: 1633279629
     locked: 0
+  - name: Attack
+    uniqueID: 2654750841
+    locked: 0
   m_RenderingLayers:
   - Default

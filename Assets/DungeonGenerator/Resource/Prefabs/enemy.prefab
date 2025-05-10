@@ -81,6 +81,7 @@ GameObject:
   - component: {fileID: 3645560898451372981}
   - component: {fileID: 1207655226726467650}
   - component: {fileID: 5739388193468862389}
+  - component: {fileID: 3757431116974854647}
   m_Layer: 0
   m_Name: enemy
   m_TagString: Untagged
@@ -252,11 +253,38 @@ MonoBehaviour:
   showGizmos: 1
   anchorPosition: {x: -0.07, y: -0.01}
   useTransformAsAnchor: 1
-  maxHealth: 3
+  maxHealth: 6
   attackDamage: 1
   attackRange: 0.5
   itemDrops:
   - {fileID: 7595965750670295219, guid: bcf035fbd1ded5d4ba2d562d7be484e9, type: 3}
   - {fileID: 2154745804732005595, guid: fc28bcc7cf3446340a9ce96f05612bb3, type: 3}
-  dropChance: 0.5
+  dropChance: 0.7
   dropForce: 3
+  animator: {fileID: 3757431116974854647}
+  moveXParam: MoveX
+  moveYParam: MoveY
+  isMovingParam: IsMoving
+  knockbackResistance: 0.5
+--- !u!95 &3757431116974854647
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4661560614119546095}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c017c3ec5b7cba24789820b6f961cc99, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

@@ -16,8 +16,10 @@ MonoBehaviour:
   type: 1
   actionType: 0
   range: {x: 5, y: 4}
+  canBeDropped: 1
   stackable: 0
   image: {fileID: 2185596340806550203, guid: f2150b8931dff9b4199943c1aa97545f, type: 3}
   attackRange: 2.5
   attackCooldown: 0.5
   damage: 1
+  knockbackForce: 3
